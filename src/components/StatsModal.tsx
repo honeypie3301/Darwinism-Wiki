@@ -20,6 +20,7 @@ interface TelemetryLog {
   slug: string;
   visitorId: string;
   wiki?: string;
+  title?: string;
 }
 
 const DARWINISM_EXCLUSIVE_SLUGS = new Set([
@@ -128,6 +129,7 @@ export default function StatsModal({ isOpen, onClose, articles }: StatsModalProp
               timestamp: new Date().toISOString(),
               type: 'unique' as const,
               slug: 'home',
+              title: 'Home',
               wiki: 'darwinism',
               visitorId: localId.substring(0, 12)
             },
@@ -135,6 +137,7 @@ export default function StatsModal({ isOpen, onClose, articles }: StatsModalProp
               timestamp: new Date(Date.now() - 600000).toISOString(),
               type: 'repeat' as const,
               slug: 'sanity',
+              title: 'Sanity Mechanics & Hallucinations',
               wiki: 'backwoods',
               visitorId: 'surv_f2910a'
             },
@@ -142,6 +145,7 @@ export default function StatsModal({ isOpen, onClose, articles }: StatsModalProp
               timestamp: new Date(Date.now() - 1800000).toISOString(),
               type: 'unique' as const,
               slug: 'serum-overview',
+              title: "Darwin's Serum Mechanics",
               wiki: 'darwinism',
               visitorId: 'surv_f2910a'
             }
@@ -214,6 +218,7 @@ export default function StatsModal({ isOpen, onClose, articles }: StatsModalProp
             timestamp: tsStr,
             type: data.type || 'repeat',
             slug: data.slug || 'home',
+            title: data.title || undefined,
             visitorId: data.visitorId || 'unknown',
             wiki: data.wiki || undefined
           });
@@ -264,11 +269,22 @@ export default function StatsModal({ isOpen, onClose, articles }: StatsModalProp
     setTimeout(() => setIsRefreshing(false), 600);
   };
 
-  const getArticleTitle = (slug: string) => {
-    const article = articles.find(a => a.slug === slug);
-    if (article) return article.title;
-    // Format fallback neatly
-    return slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
+  const getArticleTitle = (log: TelemetryLog) => {
+    // 1. If log captured title dynamically at visit time, use it directly!
+    if (log.title) return log.title;
+
+    // 2. Check if active wiki articles list contains this slug
+    const localArticle = articles.find(a => a.slug === log.slug);
+    if (localArticle) return localArticle.title;
+
+    // 3. Known fallback titles for historical un-tagged external wiki logs
+    if (log.slug === 'sanity') return 'Sanity Mechanics & Hallucinations';
+    if (log.slug === 'fertilizer-tiers') return 'Fertilizer Tiers & Efficacy';
+    if (log.slug === 'growth-rates') return 'Crop Growth Rates & Yields';
+    if (log.slug === 'bonemeal-recipes') return 'Bonemeal Crafting Recipes';
+
+    // 4. Default clean Title Case formatting for any unmapped slug
+    return log.slug.charAt(0).toUpperCase() + log.slug.slice(1).replace(/-/g, ' ');
   };
 
   if (!isOpen) return null;
@@ -474,7 +490,7 @@ export default function StatsModal({ isOpen, onClose, articles }: StatsModalProp
                               {info.id === 'darwinism' && <Dna className="w-2.5 h-2.5 text-sky-400 shrink-0" />}
                               {info.name}
                             </span>
-                            <span className="text-sky-300 hover:underline font-semibold">{getArticleTitle(log.slug)}</span>
+                            <span className="text-sky-300 hover:underline font-semibold">{getArticleTitle(log)}</span>
                             <span className={`inline-block px-1 rounded text-[9px] uppercase font-bold leading-none py-0.5 ${
                               isNew 
                                 ? 'bg-sky-950/90 text-sky-300 border border-sky-700/80' 

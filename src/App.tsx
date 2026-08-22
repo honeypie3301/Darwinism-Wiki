@@ -8,6 +8,7 @@ import { WIKI_ARTICLES, WIKI_SEARCH_DATABASE } from './data/wikiData';
 import Sidebar from './components/Sidebar';
 import ArticleView from './components/ArticleView';
 import StatsModal from './components/StatsModal';
+import DarwinismIcon from './components/DarwinismIcon';
 
 function WikiContainer() {
   const { slug } = useParams<{ slug: string }>();
@@ -64,6 +65,7 @@ function WikiContainer() {
             timestamp: new Date().toISOString(),
             type: 'unique' as 'unique' | 'repeat',
             slug: slug,
+            title: activeArticle ? activeArticle.title : slug,
             wiki: 'darwinism',
             visitorId: visitorId.substring(0, 12)
           }
@@ -92,6 +94,7 @@ function WikiContainer() {
             timestamp: new Date().toISOString(),
             type: (isUnique ? 'unique' : 'repeat') as 'unique' | 'repeat',
             slug: slug,
+            title: activeArticle ? activeArticle.title : slug,
             wiki: 'darwinism',
             visitorId: visitorId.substring(0, 12)
           });
@@ -139,6 +142,7 @@ function WikiContainer() {
           timestamp: serverTimestamp(),
           type: isUnique ? 'unique' : 'repeat',
           slug,
+          title: activeArticle ? activeArticle.title : slug,
           wiki: 'darwinism',
           visitorId: visitorId.substring(0, 12)
         });
@@ -312,11 +316,11 @@ function WikiContainer() {
           </span>
           <button 
             onClick={() => setStatsOpen(true)}
-            className="w-8 h-8 rounded bg-[#1e2720] border border-[#2d3a2f] flex items-center justify-center text-[#a9d1b0] font-serif font-bold text-sm hover:bg-[#253228] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg bg-[#131c31] border border-[#253655] flex items-center justify-center p-1 hover:bg-[#1d2d47] transition-colors cursor-pointer"
             title="View Terminal Stats"
             id="header-b-icon"
           >
-            B
+            <DarwinismIcon className="w-full h-full" />
           </button>
         </header>
 

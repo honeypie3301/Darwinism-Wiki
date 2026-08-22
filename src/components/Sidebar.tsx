@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DarwinismIcon from './DarwinismIcon';
 import { 
   Search, 
   X, 
@@ -108,11 +109,11 @@ export default function Sidebar({
                 e.stopPropagation();
                 onBIconClick?.();
               }}
-              className="w-8 h-8 rounded bg-[#131c31] border border-[#253655] flex items-center justify-center text-[#7dd3fc] font-serif font-bold text-lg hover:bg-[#1d2d47] hover:border-[#38bdf8] cursor-pointer transition-colors shrink-0 shadow-[0_0_8px_rgba(56,189,248,0.2)]"
+              className="w-9 h-9 rounded-lg bg-[#131c31] border border-[#253655] flex items-center justify-center p-1 hover:bg-[#1d2d47] hover:border-[#38bdf8] cursor-pointer transition-colors shrink-0 shadow-[0_0_12px_rgba(56,189,248,0.25)]"
               title="View Evolution Stats"
               id="sidebar-b-icon"
             >
-              D
+              <DarwinismIcon className="w-full h-full" />
             </button>
             <a href="#/wiki/home" className="flex flex-col text-left" onClick={onClose}>
               <h1 className="font-serif font-bold text-slate-100 tracking-wide text-sm hover:text-[#7dd3fc] transition-colors">

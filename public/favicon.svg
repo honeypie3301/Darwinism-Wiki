@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1329"/>
+      <stop offset="50%" stop-color="#070a13"/>
+      <stop offset="100%" stop-color="#03050a"/>
+    </linearGradient>
+    <linearGradient id="dnaGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="dnaGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Card -->
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="url(#bgGrad)" stroke="#253655" stroke-width="12"/>
+  <rect x="32" y="32" width="448" height="448" rx="80" fill="none" stroke="#38bdf8" stroke-width="6" stroke-opacity="0.5"/>
+
+  <!-- DNA Helix Path -->
+  <g>
+    <!-- Strand 1 -->
+    <path d="M 160 110 C 310 180, 310 330, 160 402" fill="none" stroke="url(#dnaGrad1)" stroke-width="36" stroke-linecap="round"/>
+    <!-- Strand 2 -->
+    <path d="M 352 110 C 202 180, 202 330, 352 402" fill="none" stroke="url(#dnaGrad2)" stroke-width="36" stroke-linecap="round"/>
+
+    <!-- Base pairs -->
+    <line x1="195" y1="155" x2="317" y2="155" stroke="#38bdf8" stroke-width="18" stroke-linecap="round" opacity="0.9"/>
+    <line x1="232" y1="215" x2="280" y2="215" stroke="#22d3ee" stroke-width="18" stroke-linecap="round" opacity="0.9"/>
+    <line x1="232" y1="297" x2="280" y2="297" stroke="#22d3ee" stroke-width="18" stroke-linecap="round" opacity="0.9"/>
+    <line x1="195" y1="357" x2="317" y2="357" stroke="#38bdf8" stroke-width="18" stroke-linecap="round" opacity="0.9"/>
+
+    <!-- Nucleus Nodes -->
+    <circle cx="160" cy="110" r="26" fill="#7dd3fc"/>
+    <circle cx="352" cy="110" r="26" fill="#38bdf8"/>
+    <circle cx="256" cy="256" r="32" fill="#e0f2fe"/>
+    <circle cx="160" cy="402" r="26" fill="#38bdf8"/>
+    <circle cx="352" cy="402" r="26" fill="#7dd3fc"/>
+  </g>
+</svg>
