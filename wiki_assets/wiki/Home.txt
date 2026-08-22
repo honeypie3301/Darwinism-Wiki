@@ -1,0 +1,18 @@
+# DARWINISM WIKI
+
+Welcome to the official field guide and biological repository for **Darwinism**, a Minecraft mod centered around real-time physiological evolution, adaptive genetic mutation, and environmental response systems.
+
+== Core Concept ==
+Darwinism introduces **Darwin's Serum**—a tiered potion effect that makes your body respond directly to the surrounding world and combat events in real time. Rather than providing fixed static stat boosts, the serum dynamically triggers target biological adaptations whenever physical stress or environmental hazards are encountered.
+
+* **Locomotion Mutation (Sprint Acceleration)**: Sprinting continuously triggers rapid acceleration and agility, allowing you to outrun hazards.
+* **Cellular Hardening (Scaling Regeneration)**: Taking physical damage activates dynamic regeneration that amplifies as injuries accumulate.
+* **Ocular Adaptation (Sub-Visual Sight)**: Submerging into low-light levels or pitch-black subterranean caves automatically triggers Night Vision.
+* **Aquatic & Pyrogenic Defenses**: Drowning triggers Water Breathing & Swift Swim, while extreme thermal exposure grants Fire Resistance.
+
+== Wiki Maintenance & Version Updates ==
+<u>The wiki is always updated before a new version releases.</u>
+* **Tier III Apex Formulation**: Introduces complete multi-environmental adaptation triggers pushing biological potential far beyond human limits.
+* **Ocular Threshold Engine**: Instantaneous sub-light night vision activation with dynamic fade-in logic.
+* **Damage-Scaling Recovery**: Regenerative amplification dynamically tied to accumulated health deficits.
+* **Genome Stabilizer**: Potion of Milk integration for instantaneous mutation resets and genomic baseline clearing.

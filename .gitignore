@@ -1,0 +1,11 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+firebase-applet-config.json
+wiki_assets/terminated_entities/Vanilla/Warden.webp
+*.webp

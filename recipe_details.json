@@ -1,0 +1,100 @@
+{
+  "the_backwoods:darwinism_1_bottle": [
+    {
+      "file": "brewing_darwinism_1.json",
+      "type": "minecraft:brewing",
+      "outputCount": 1,
+      "pattern": null,
+      "keyMap": null,
+      "ingredients": [
+        "minecraft:fermented_spider_eye",
+        "minecraft:awkward_potion"
+      ]
+    }
+  ],
+  "the_backwoods:darwinism_2_bottle": [
+    {
+      "file": "brewing_darwinism_2.json",
+      "type": "minecraft:brewing",
+      "outputCount": 1,
+      "pattern": null,
+      "keyMap": null,
+      "ingredients": [
+        "minecraft:glowstone_dust",
+        "the_backwoods:darwinism_1_bottle"
+      ]
+    }
+  ],
+  "the_backwoods:darwinism_3_bottle": [
+    {
+      "file": "brewing_darwinism_3.json",
+      "type": "minecraft:brewing",
+      "outputCount": 1,
+      "pattern": null,
+      "keyMap": null,
+      "ingredients": [
+        "minecraft:dragon_breath",
+        "the_backwoods:darwinism_2_bottle"
+      ]
+    }
+  ],
+  "the_backwoods:milk_bottle": [
+    {
+      "file": "crafting_milk_bottle.json",
+      "type": "minecraft:crafting_shapeless",
+      "outputCount": 1,
+      "pattern": null,
+      "keyMap": null,
+      "ingredients": [
+        "minecraft:milk_bucket",
+        "minecraft:glass_bottle"
+      ]
+    }
+  ],
+  "the_backwoods:splash_darwinism": [
+    {
+      "file": "brewing_splash_darwinism.json",
+      "type": "minecraft:brewing",
+      "outputCount": 1,
+      "pattern": null,
+      "keyMap": null,
+      "ingredients": [
+        "minecraft:gunpowder",
+        "the_backwoods:darwinism_1_bottle"
+      ]
+    }
+  ],
+  "the_backwoods:lingering_darwinism": [
+    {
+      "file": "brewing_lingering_darwinism.json",
+      "type": "minecraft:brewing",
+      "outputCount": 1,
+      "pattern": null,
+      "keyMap": null,
+      "ingredients": [
+        "minecraft:dragon_breath",
+        "the_backwoods:splash_darwinism"
+      ]
+    }
+  ],
+  "the_backwoods:arrow_darwinism": [
+    {
+      "file": "crafting_arrow_darwinism.json",
+      "type": "minecraft:crafting_shaped",
+      "outputCount": 8,
+      "pattern": [
+        "AAA",
+        "APA",
+        "AAA"
+      ],
+      "keyMap": {
+        "A": { "item": "minecraft:arrow" },
+        "P": { "item": "the_backwoods:lingering_darwinism" }
+      },
+      "ingredients": [
+        "minecraft:arrow",
+        "the_backwoods:lingering_darwinism"
+      ]
+    }
+  ]
+}

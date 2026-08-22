@@ -1,0 +1,6 @@
+{
+  "name": "Darwinism Wiki",
+  "description": "An interactive field guide, biological index, and recipe database for the Darwinism Minecraft mod.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
