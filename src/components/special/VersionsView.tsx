@@ -15,7 +15,7 @@ import {
   FileCode, 
   CheckCircle2, 
   HardDrive,
-  X
+  GitCommit
 } from 'lucide-react';
 import UpdatedFrame from '../UpdatedFrame';
 
@@ -470,7 +470,7 @@ export default function VersionsView() {
             </div>
 
             <div className="p-2.5 bg-[#070a13] border border-[#1e293b] rounded-lg">
-              <span className="text-[10px] font-mono text-slate-500 uppercase block">Development Milestones</span>
+              <span className="text-[10px] font-mono text-slate-500 uppercase block">Internal Archives</span>
               <span className="text-xs font-mono font-bold text-indigo-300">
                 {totalArchivedCount} milestones
               </span>
@@ -521,7 +521,7 @@ export default function VersionsView() {
               }`}
             >
               <Archive className="w-3 h-3" />
-              Milestone Archives ({totalArchivedCount})
+              Internal Archives ({totalArchivedCount})
             </button>
           </div>
 
@@ -555,42 +555,36 @@ export default function VersionsView() {
               </button>
             </div>
 
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            {/* Keyword Search */}
+            <div className="relative flex items-center min-w-[160px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search changelog..."
+                placeholder="Filter version / changelog..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-7 py-1.5 bg-[#0b101d] border border-[#1e293b] rounded-lg text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 w-36 sm:w-48 transition-all"
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full bg-[#0b101d] border border-[#1e293b] rounded-lg py-1 pl-8 pr-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500"
               />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
             </div>
           </div>
         </div>
 
         {/* Timeline Stream */}
-        <div className="relative pl-6 sm:pl-8 border-l border-[#1e293b] space-y-6">
+        <div className="relative pl-6 sm:pl-8 border-l border-[#1e293b] space-y-10">
           {/* 1. Official Modrinth Releases */}
           {(activeTab === 'all' || activeTab === 'modrinth') && (
             <>
               {filteredModrinth.map((v) => {
                 const primaryFile = v.files.find(f => f.primary) || v.files[0];
                 const isExpanded = !!expandedIds[v.id];
+                const gameVerStr = v.game_versions.join(', ');
+                const loaderStr = v.loaders.join(', ');
 
                 return (
                   <div key={v.id} className="relative group">
                     {/* Timeline Node */}
                     <div className="absolute -left-[31px] sm:-left-[39px] top-1.5 flex items-center justify-center w-6 h-6 rounded-full bg-[#070a13] border-2 border-sky-400 shadow-sm shadow-sky-950/20 z-10">
-                      <HardDrive className="w-3.5 h-3.5 text-sky-300" />
+                      <GitCommit className="w-3.5 h-3.5 text-sky-400" />
                     </div>
 
                     {/* Version Card */}
@@ -599,13 +593,16 @@ export default function VersionsView() {
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2.5">
                             <h3 className="font-serif text-lg sm:text-xl font-bold text-slate-100 tracking-tight">
-                              {v.name || `Darwinism ${v.version_number}`}
+                              {v.name}
                             </h3>
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#131c31] text-sky-300 border border-[#253655] uppercase">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#131c31] text-sky-300 border border-sky-800 uppercase">
                               <Tag className="w-2.5 h-2.5" />
-                              {v.version_number}
+                              v{v.version_number.replace(/^v/, '')}
                             </span>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-sky-950/80 text-sky-300 border border-sky-700/80">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#0d1728] text-sky-300 border border-[#253655]">
+                              {loaderStr.toUpperCase()} • {gameVerStr}
+                            </span>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-sky-950/70 text-sky-300 border border-sky-700/80">
                               Official
                             </span>
                           </div>

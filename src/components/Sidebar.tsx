@@ -236,7 +236,7 @@ export default function Sidebar({
               CurseForge Page
             </a>
           </div>
-          <div className="select-none text-[9px] uppercase tracking-wider text-slate-500">MINECRAFT NEOFORGE 1.21.8 / 1.21.1</div>
+          <div className="select-none text-[9px] uppercase tracking-wider text-slate-500">DARWINIAN BIO-ARCHIVE • NEOFORGE 1.21.8</div>
         </div>
       </aside>
     </>
