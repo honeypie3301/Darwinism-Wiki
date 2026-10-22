@@ -49,13 +49,16 @@ function getItemVisualSpec(rawId: string): VisualSpec {
 
   // Mapping for Darwinism materials and vanilla reagents
   const mapping: Record<string, { short: string; bg: string; text: string; border: string; glow: string }> = {
-    'darwinism_1_bottle': { short: 'D1', bg: 'bg-[#0c192e]', text: 'text-[#7dd3fc]', border: 'border-[#1e3a5f]', glow: 'group-hover:shadow-[0_0_12px_rgba(56,189,248,0.25)]' },
-    'darwinism_2_bottle': { short: 'D2', bg: 'bg-[#0a2140]', text: 'text-[#38bdf8]', border: 'border-[#2563eb]', glow: 'group-hover:shadow-[0_0_14px_rgba(56,189,248,0.35)]' },
-    'darwinism_3_bottle': { short: 'D3', bg: 'bg-[#082b54]', text: 'text-[#93c5fd]', border: 'border-[#3b82f6]', glow: 'group-hover:shadow-[0_0_16px_rgba(147,197,253,0.45)]' },
-    'milk_bottle': { short: 'Mb', bg: 'bg-[#1e293b]', text: 'text-slate-100', border: 'border-slate-500', glow: 'group-hover:shadow-[0_0_10px_rgba(255,255,255,0.2)]' },
-    'splash_darwinism': { short: 'SD', bg: 'bg-[#0f2847]', text: 'text-[#7dd3fc]', border: 'border-[#1d4ed8]', glow: 'group-hover:shadow-[0_0_12px_rgba(56,189,248,0.3)]' },
-    'lingering_darwinism': { short: 'LD', bg: 'bg-[#172554]', text: 'text-[#a5f3fc]', border: 'border-[#0284c7]', glow: 'group-hover:shadow-[0_0_12px_rgba(165,243,252,0.3)]' },
+    'darwinism_1_bottle': { short: 'D1', bg: 'bg-[#0c192e]', text: 'text-[#7dd3fc]', border: 'border-[#1e3a5f]', glow: 'group-hover:shadow-[0_0_8px_rgba(56,189,248,0.2)]' },
+    'darwinism_2_bottle': { short: 'D2', bg: 'bg-[#0a2140]', text: 'text-[#38bdf8]', border: 'border-[#2563eb]', glow: 'group-hover:shadow-[0_0_8px_rgba(56,189,248,0.25)]' },
+    'darwinism_3_bottle': { short: 'D3', bg: 'bg-[#082b54]', text: 'text-[#93c5fd]', border: 'border-[#3b82f6]', glow: 'group-hover:shadow-[0_0_10px_rgba(147,197,253,0.3)]' },
+    'milk_bottle': { short: 'Mb', bg: 'bg-[#1e293b]', text: 'text-slate-100', border: 'border-slate-500', glow: 'group-hover:shadow-[0_0_6px_rgba(255,255,255,0.15)]' },
+    'splash_darwinism': { short: 'SD', bg: 'bg-[#0f2847]', text: 'text-[#7dd3fc]', border: 'border-[#1d4ed8]', glow: 'group-hover:shadow-[0_0_8px_rgba(56,189,248,0.2)]' },
+    'lingering_darwinism': { short: 'LD', bg: 'bg-[#172554]', text: 'text-[#a5f3fc]', border: 'border-[#0284c7]', glow: 'group-hover:shadow-[0_0_8px_rgba(165,243,252,0.2)]' },
     'arrow_darwinism': { short: 'AD', bg: 'bg-[#0f172a]', text: 'text-sky-300', border: 'border-sky-600', glow: '' },
+    'nautilus_shell': { short: 'Ns', bg: 'bg-[#0c242a]', text: 'text-teal-300', border: 'border-teal-700', glow: '' },
+    'golden_carrot': { short: 'Gc', bg: 'bg-[#292209]', text: 'text-amber-300', border: 'border-amber-600', glow: '' },
+    'enchanted_golden_apple': { short: 'Ega', bg: 'bg-[#281836]', text: 'text-purple-300', border: 'border-purple-600', glow: 'group-hover:shadow-[0_0_6px_rgba(216,180,254,0.2)]' },
     'fermented_spider_eye': { short: 'Fse', bg: 'bg-[#21090a]', text: 'text-rose-400', border: 'border-rose-800', glow: '' },
     'glowstone_dust': { short: 'Gd', bg: 'bg-[#2e2610]', text: 'text-amber-300', border: 'border-amber-600', glow: '' },
     'dragon_breath': { short: 'Db', bg: 'bg-[#220d1c]', text: 'text-pink-400', border: 'border-pink-700', glow: '' },

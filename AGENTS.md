@@ -7,12 +7,13 @@ When modifying or updating any Wiki pages, components, or mod features in this r
 - Ensures users see the animated glowing border and `UPDATED (7s)` badge upon viewing.
 
 ## 2. Wiki Maintenance & Version Update Note (CRITICAL)
-- **Mandatory Update**: Whenever you update any wiki content or implement commit changes, you **MUST** also update the **Wiki Maintenance Note** in:
+- **Mandatory Update**: Whenever an in-game mod update or commit change is made, you **MUST** update the **Wiki Maintenance Note** in:
   - `/src/components/special/HomeView.tsx`
-  - `/wiki_assets/wiki/Home.txt`
 - **Underline Rule**: Underline ONLY the exact sentence:
   `<u>The wiki is always updated before a new version releases.</u>`
-- **Highlights List**: Update the `Recent Highlights` list inside the notice box with concise bullet points describing the newest entities, procedures, commands, or mechanics added in the latest update.
+- **Highlights List**: Update the `Recent Highlights` list inside the notice box with concise bullet points describing the newest entities, procedures, commands, or mechanics added in the latest mod update.
+- **REMINDER 1 (MOD UPDATES ONLY)**: The Wiki Maintenance Note and its Recent Highlights list are strictly and exclusively for in-game Minecraft mod updates, releases, and mechanics. NEVER use this note to describe changes, fixes, or styling edits made to the wiki web application.
+- **REMINDER 2 (AVOID NARRATIVE TONES)**: Maintain an objective, encyclopedic, and technical documentation tone at all times. Avoid second-person narrative ("you will feel your muscles", "outrun your foes"), storytelling, or lore prose. State mechanics, values, ticks, amplifiers, and formulas directly.
 
 ## 3. Data Integrity & Accuracy
 - Always inspect the source code or patch diffs to verify mechanics before updating descriptions.

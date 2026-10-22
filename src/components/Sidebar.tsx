@@ -109,8 +109,8 @@ export default function Sidebar({
                 e.stopPropagation();
                 onBIconClick?.();
               }}
-              className="w-9 h-9 rounded-lg bg-[#131c31] border border-[#253655] flex items-center justify-center p-1 hover:bg-[#1d2d47] hover:border-[#38bdf8] cursor-pointer transition-colors shrink-0 shadow-[0_0_12px_rgba(56,189,248,0.25)]"
-              title="View Evolution Stats"
+              className="w-9 h-9 rounded-lg bg-[#131c31] border border-[#253655] flex items-center justify-center p-1 hover:bg-[#1d2d47] hover:border-[#38bdf8] cursor-pointer transition-colors shrink-0 shadow-sm hover:shadow-[0_0_6px_rgba(56,189,248,0.18)]"
+              title="Open Telemetry Terminal"
               id="sidebar-b-icon"
             >
               <DarwinismIcon className="w-full h-full" />
@@ -120,7 +120,7 @@ export default function Sidebar({
                 DARWINISM WIKI
               </h1>
               <p className="text-[10px] font-mono text-sky-400/80 uppercase tracking-wider">
-                Evolutionary Index
+                Field Guide & Index
               </p>
             </a>
           </div>
@@ -236,7 +236,7 @@ export default function Sidebar({
               CurseForge Page
             </a>
           </div>
-          <div className="select-none text-[9px] uppercase tracking-wider text-slate-600">EVOLVED FOR ADAPTIVE SURVIVAL</div>
+          <div className="select-none text-[9px] uppercase tracking-wider text-slate-500">MINECRAFT NEOFORGE 1.21.8 / 1.21.1</div>
         </div>
       </aside>
     </>

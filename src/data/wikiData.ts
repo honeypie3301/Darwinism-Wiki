@@ -1,3 +1,10 @@
+/**
+ * CONSTANT REMINDER 1: AVOID NARRATIVE TONES
+ * All descriptions must be factual, technical, and encyclopedic. Do not use storytelling prose.
+ *
+ * CONSTANT REMINDER 2: WIKI MAINTENANCE NOTE IS FOR MOD UPDATES ONLY
+ * In-game mod mechanics and updates only. Never document wiki website changes.
+ */
 import { WikiArticle } from '../types';
 
 export const WIKI_ARTICLES: WikiArticle[] = [
@@ -24,59 +31,74 @@ export function getArticleBySlug(slug: string): WikiArticle | undefined {
  */
 export const WIKI_SEARCH_DATABASE: Record<string, string> = {
   home: `
-    Darwinism Minecraft Mod Official Field Guide
-    Darwin Serum Adaptation System
-    Realtime Physiological Mutation Environmental Triggers
-    Locomotion Hyper Mobility Sprinting Acceleration
-    Cellular Hardening Scaling Regeneration Damage Reaction
-    Sub-Visual Sight Ocular Adaptation Darkness Threshold
-    Aquatic Drowning Protection Swift Swim Water Breathing
-    Thermal Lava Adaptation Fire Resistance
+    Darwinism Minecraft Mod Field Guide
+    Darwin's Serum System Attributes Procedures
+    Kinetic Sprint Acceleration Movement Speed II III IV
+    Adrenaline Dynamic Regeneration Damage Scaling
+    Ocular Night Vision Light Threshold
+    Charge High Jump Crouching Sneak Ground
+    Threat Blast Shield Primed TNT Creeper Resistance
+    Powder Snow Freeze Clamping Immunity
     Potion of Darwinism Tier I Tier II Tier III
-    Potion of Milk Genome Stabilizer
+    Potion of Milk Genome Neutralizer DNA Alteration
+    Permanent DNA Mutation 4-7 bottles
+    Anti Devolution Protocol Devolution Refused
     Tipped Arrows Splash Lingering
   `,
   'serum-overview': `
     Darwin Serum Core Mechanics
-    Active Physiological Response
-    Sprinting Acceleration Hyper Mobility
-    Damage Scaling Regeneration Cellular Hardening
-    Darkness Activation Night Vision Ocular Adaptation
-    Drowning Submersion Water Breathing Swift Swim
-    Thermal Protection Lava Fire Resistance
-    Tier 1 Mild Adaptation Tier 2 Amplified Mutation Tier 3 Apex Human Limits Exceeded
+    Active Physiological Response Engine
+    Sprinting Acceleration Tick Counter > 50 60 ticks
+    Combat Adrenaline Dynamic Regeneration Math.round(adrenaline / 3)
+    Emergency Low Health Resistance IV Regeneration V
+    Ambient Raw Brightness <= 4 <= 3 Night Vision
+    Powder Snow Freeze Ticks Clamped Immunity
+    Threat Blast Shield TNT Creeper Minecart Resistance IV V
+    Step Height 1.0 Block Traversal
+    Static MobEffect Attributes Attack Damage Safe Fall Distance Burning Time
   `,
   'biological-adaptations': `
     Biological Adaptations Triggers Thresholds
-    Locomotion Mutation Sprinting continuous speed boost acceleration
-    Cellular Hardening Taking damage triggers regeneration scales with injury severity
-    Sub-Visual Ocular Sight Stepping into dark caves/night automatically grants night vision
-    Aquatic Propulsion Drowning damage submersed in water grants water breathing swift swimming
-    Pyrogenic Defense High temperatures lava grants fire resistance
+    Locomotion Movement Speed II III IV Jump Boost IV VI VIII
+    Cellular Regeneration Adrenaline Scaling Emergency Overdrive
+    Ocular Night Vision Raw Brightness Detection
+    Threat Blast Shield Explosive Proximity Detection 6 blocks
+    Cryo Insulation Powder Snow Suppression
+    Step Height 1.0 Full Block Ascend
+    Genomic Permanence isDarwinismPermanent
+    Anti-Devolution Protocol Downgrade Rejection
   `,
   'serum-tiers': `
     Serum Tier Formulations Brewing Recipes
-    Tier I Darwinism Basic physiological responses
-    Tier II Darwinism Amplified scaling response multi-adaptation
-    Tier III Darwinism Apex formulation complete environmental immunity
-    Potion of Milk Genome Neutralizer
+    Tier I Nautilus Shell Awkward Potion 3:00 minutes
+    Tier II Golden Carrot Potion of Darwinism I 3:00 minutes
+    Tier III Enchanted Golden Apple Potion of Darwinism II 3:00 minutes permanent
+    Potion of Milk Fermented Spider Eye Potion of Darwinism I
+    Static Modifiers Dynamic Scaling
   `,
   items: `
     Potion of Darwinism I II III
     Splash Potion of Darwinism I II III
     Lingering Potion of Darwinism I II III
     Arrow of Darwinism I II III
-    Potion of Milk
+    Potion of Milk Splash Lingering Arrow
+    Nautilus Shell Golden Carrot Enchanted Golden Apple Fermented Spider Eye
   `,
   recipes: `
-    Brewing Recipes
-    Awkward Potion Fermented Spider Eye
-    Glowstone Dust Dragons Breath Echo Shard Heavy Core Nether Star
-    Brewing Stand Reagents
+    Brewing Stand Crafting Table Recipes
+    Nautilus Shell Awkward Potion Darwinism 1
+    Golden Carrot Darwinism 1 Darwinism 2
+    Enchanted Golden Apple Darwinism 2 Darwinism 3
+    Fermented Spider Eye Darwinism 1 Milk Bottle
+    Gunpowder Splash Potion
+    Dragon's Breath Lingering Potion
+    Arrow Lingering Potion Tipped Arrow of Darwinism
   `,
   versions: `
-    Version History Release Notes
-    NeoForge Forge 1.20.1 1.21.1 1.21.8
-    Adaptive Regeneration Night Vision Speed Acceleration
+    Version History Release Notes Changelog
+    NeoForge 1.21.8 1.21.1 1.20.1
+    Darwinism 1.4.1 1.3.1 1.3.0 1.2.0 1.1.0 1.0.0
+    Modrinth Downloads Direct Jar Download
+    Attribute migration permanent DNA alteration
   `
 };

@@ -150,29 +150,36 @@ function WikiContainer() {
       }
       try {
         const visitorDocRef = doc(firestoreDb, 'visitors', visitorId);
-        const visitorSnapshot = await getDoc(visitorDocRef);
-        const isUnique = !visitorSnapshot.exists();
+        const isKnownLocally = localStorage.getItem('wiki_visitor_established') === 'true';
+        let isUnique = false;
 
-        if (isUnique) {
-          await setDoc(visitorDocRef, {
-            firstVisit: serverTimestamp(),
-            lastVisit: serverTimestamp()
-          });
-        } else {
-          await setDoc(visitorDocRef, {
-            lastVisit: serverTimestamp()
-          }, { merge: true });
+        if (!isKnownLocally) {
+          const visitorSnapshot = await getDoc(visitorDocRef);
+          isUnique = !visitorSnapshot.exists();
+          localStorage.setItem('wiki_visitor_established', 'true');
         }
 
+        const visitorWrite = isUnique
+          ? setDoc(visitorDocRef, {
+              firstVisit: serverTimestamp(),
+              lastVisit: serverTimestamp()
+            })
+          : setDoc(visitorDocRef, {
+              lastVisit: serverTimestamp()
+            }, { merge: true });
+
         const statsDocRef = doc(firestoreDb, 'stats', 'global');
-        await setDoc(statsDocRef, {
+        const statsWrite = setDoc(statsDocRef, {
           totalCount: increment(1),
           uniqueCount: isUnique ? increment(1) : increment(0),
           repeatCount: !isUnique ? increment(1) : increment(0),
+          pageViews: {
+            [slug]: increment(1)
+          },
           [`pageViews.${slug}`]: increment(1)
         }, { merge: true });
 
-        await addDoc(collection(firestoreDb, 'telemetry_logs'), {
+        const logWrite = addDoc(collection(firestoreDb, 'telemetry_logs'), {
           timestamp: serverTimestamp(),
           type: isUnique ? 'unique' : 'repeat',
           slug,
@@ -181,6 +188,7 @@ function WikiContainer() {
           visitorId: visitorId.substring(0, 12)
         });
 
+        await Promise.all([visitorWrite, statsWrite, logWrite]);
         return true;
       } catch (err) {
         console.warn('Firebase registration failed, falling back to local simulation.', err);
@@ -190,6 +198,11 @@ function WikiContainer() {
 
     const recordVisit = async () => {
       try {
+        // Check if current device opted out of telemetry
+        if (localStorage.getItem('wiki_telemetry_ignore_device') === 'true') {
+          return;
+        }
+
         let visitorId = localStorage.getItem('wiki_visitor_id');
         if (!visitorId) {
           visitorId = 'surv_' + Math.random().toString(36).substring(2, 11) + Math.random().toString(36).substring(2, 11);

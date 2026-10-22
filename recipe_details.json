@@ -7,7 +7,7 @@
       "pattern": null,
       "keyMap": null,
       "ingredients": [
-        "minecraft:fermented_spider_eye",
+        "minecraft:nautilus_shell",
         "minecraft:awkward_potion"
       ]
     }
@@ -20,7 +20,7 @@
       "pattern": null,
       "keyMap": null,
       "ingredients": [
-        "minecraft:glowstone_dust",
+        "minecraft:golden_carrot",
         "the_backwoods:darwinism_1_bottle"
       ]
     }
@@ -33,21 +33,21 @@
       "pattern": null,
       "keyMap": null,
       "ingredients": [
-        "minecraft:dragon_breath",
+        "minecraft:enchanted_golden_apple",
         "the_backwoods:darwinism_2_bottle"
       ]
     }
   ],
   "the_backwoods:milk_bottle": [
     {
-      "file": "crafting_milk_bottle.json",
-      "type": "minecraft:crafting_shapeless",
+      "file": "brewing_milk_bottle.json",
+      "type": "minecraft:brewing",
       "outputCount": 1,
       "pattern": null,
       "keyMap": null,
       "ingredients": [
-        "minecraft:milk_bucket",
-        "minecraft:glass_bottle"
+        "minecraft:fermented_spider_eye",
+        "the_backwoods:darwinism_1_bottle"
       ]
     }
   ],

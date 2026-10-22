@@ -1,3 +1,10 @@
+/**
+ * CONSTANT REMINDER 1: AVOID NARRATIVE TONES
+ * All descriptions must be factual, technical, and encyclopedic. Do not use storytelling prose.
+ *
+ * CONSTANT REMINDER 2: WIKI MAINTENANCE NOTE IS FOR MOD UPDATES ONLY
+ * In-game mod mechanics and updates only. Never document wiki website changes.
+ */
 import React from 'react';
 import { Hammer, Sparkles, FlaskConical } from 'lucide-react';
 import FancyRecipeView from './FancyRecipeView';

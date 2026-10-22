@@ -26,7 +26,7 @@ export default function UpdatedFrame({
   const [active, setActive] = useState<boolean>(() => {
     if (!isUpdated) return false;
     try {
-      const seen = localStorage.getItem(`backwoods_updated_seen_${id}`);
+      const seen = localStorage.getItem(`darwinism_updated_seen_${id}`);
       return seen !== 'true';
     } catch (e) {
       return true;
@@ -62,7 +62,7 @@ export default function UpdatedFrame({
       const timer = setTimeout(() => {
         setActive(false);
         try {
-          localStorage.setItem(`backwoods_updated_seen_${id}`, 'true');
+          localStorage.setItem(`darwinism_updated_seen_${id}`, 'true');
         } catch (e) {
           // Ignore quota / security error in restricted sandboxes
         }
@@ -77,7 +77,7 @@ export default function UpdatedFrame({
       ref={containerRef}
       className={`relative transition-all duration-700 ${
         active
-          ? 'z-20 border border-sky-400/60 shadow-[0_0_14px_rgba(56,189,248,0.3)] rounded-xl'
+          ? 'z-20 border border-sky-400/40 shadow-[0_0_8px_rgba(56,189,248,0.18)] rounded-xl'
           : ''
       } ${className}`}
     >

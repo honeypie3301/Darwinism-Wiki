@@ -1,0 +1,28 @@
+{
+  "name": "Darwinism Wiki",
+  "version": "1.0.0",
+  "categories": [
+    {
+      "name": "Core Guide",
+      "pages": [
+        { "slug": "home", "title": "Home" },
+        { "slug": "serum-overview", "title": "Darwin's Serum Mechanics" },
+        { "slug": "biological-adaptations", "title": "Biological Adaptations" }
+      ]
+    },
+    {
+      "name": "Serum & Science",
+      "pages": [
+        { "slug": "serum-tiers", "title": "Serum Tiers & Formulations" },
+        { "slug": "items", "title": "Potion & Item Registry" },
+        { "slug": "recipes", "title": "Brewing & Crafting Recipes" }
+      ]
+    },
+    {
+      "name": "Changelog",
+      "pages": [
+        { "slug": "versions", "title": "Version History" }
+      ]
+    }
+  ]
+}
