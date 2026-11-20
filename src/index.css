@@ -160,6 +160,37 @@
   --ui-cta-ink: #09090b;
 }
 
+/* ==========================================================================
+   THEME 5: CRIMSON ADRENALINE (OBSIDIAN BURGUNDY & ARTERIAL ROSE)
+   ========================================================================== */
+[data-theme="crimson-adrenaline"] {
+  color-scheme: dark;
+  --ui-font-display: "Fraunces", ui-serif, Georgia, serif;
+  --ui-canvas: #0d080a;
+  --ui-surface: #150d10;
+  --ui-surface-alt: #1f1318;
+  --ui-line: #341d25;
+  --ui-line-soft: #26151b;
+  --ui-ink: #f7ecee;
+  --ui-ink-muted: #c9adb4;
+  --ui-ink-subtle: #96747e;
+  --ui-accent: #e11d48;
+  --ui-accent-hover: #fb7185;
+  --ui-accent-soft: #2e1019;
+  --ui-accent-ink: #fff1f2;
+  --ui-accent-text: #fda4af;
+  --ui-accent-border: #6e2236;
+  --ui-good-text: #6ee7b7;
+  --ui-good-soft: #0e241c;
+  --ui-good-border: #1d4a3a;
+  --ui-warn-text: #fcd34d;
+  --ui-warn-soft: #2c1f11;
+  --ui-warn-border: #6e471b;
+  --ui-cta: #fda4af;
+  --ui-cta-hover: #fecdd3;
+  --ui-cta-ink: #16090d;
+}
+
 @layer base {
   html,
   body {
@@ -1088,6 +1119,412 @@
 [data-theme="archival-dusk"] input:focus,
 [data-theme="archival-dusk"] textarea:focus,
 [data-theme="archival-dusk"] select:focus {
+  border-color: var(--ui-accent) !important;
+  outline: none !important;
+}
+
+/* ==========================================================================
+   CRIMSON ADRENALINE — DENSE SUB-VIEW ADAPTATION
+   ========================================================================== */
+[data-theme="crimson-adrenaline"] [class*="bg-[#080a08]"] {
+  background-color: var(--ui-canvas) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="bg-[#040504]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#050605]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#050705]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#050806]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#060806]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#060a07]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#060b08]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#070907]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#070b08]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#080908]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#080b09]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#080c09]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#080d0a]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#080e0a]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#090b09]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#090b0a]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#090c0a]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#090d0a]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0a0c0a]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0a0d0a]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0a0d0b]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0a0f0b]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0a0f0c]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0a110d]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0b0e0c]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0b0f0c]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0b100c]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0b100d]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0c0e0c]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0c0f0d]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0c100d]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0c110e]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0c120d]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0c120e]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0c130f]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0c1311]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0d100e]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0d110e]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0d120e]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0d120f]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0d130f]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0d140f]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0d1611]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0e110f]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0e120f]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0e1410]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0e1611]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0f1210]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0f1310]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#0f1d16]"] {
+  background-color: var(--ui-surface) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="bg-[#101411]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#101511]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#101612]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#101712]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#101b19]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#10201d]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#111412]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#111512]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#111612]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#111613]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#111712]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#111713]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#121612]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#121613]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#121713]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#121813]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#121913]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#121914]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#121c15]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#121e15]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#121f17]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#122416]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#131914]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#131a14]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#131d15]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#131d17]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#141715]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#141a15]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#141b15]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#141b16]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#141d16]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#142018]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#142318]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#151a16]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#15221a]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#15241b]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#161d17]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#161d18]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#162218]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#171e19]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#172219]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#172419]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#182119]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#18221a]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#18221b]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#19221b]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1a221c]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1a241c]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1a241d]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1a251c]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1b221c]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1b261e]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1c271e]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1e2720]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1e2a20]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1e2a22]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1f2820]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1f2a21]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#1f2b21]"],
+[data-theme="crimson-adrenaline"] [class*="bg-emerald-950"],
+[data-theme="crimson-adrenaline"] [class*="bg-emerald-900"],
+[data-theme="crimson-adrenaline"] [class*="bg-green-950"],
+[data-theme="crimson-adrenaline"] [class*="bg-green-900"] {
+  background-color: var(--ui-surface-alt) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="bg-[#18201a]"] {
+  background-color: var(--ui-accent-soft) !important;
+  color: var(--ui-accent-text) !important;
+  border-left-color: var(--ui-accent) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="bg-[#709978]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#527058]"],
+[data-theme="crimson-adrenaline"] .bg-emerald-400,
+[data-theme="crimson-adrenaline"] .bg-emerald-500,
+[data-theme="crimson-adrenaline"] .bg-green-400 {
+  background-color: var(--ui-accent) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#131914]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#151916]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#212f23]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#253228]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#111712]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#121612]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#121714]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#121c15]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#151d17]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#15221a]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-[#131d17]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:bg-emerald"]:hover {
+  background-color: var(--ui-surface-alt) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="border-[#111712]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#121612]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#121813]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#131a14]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#141b15]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#141b16]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#141c15]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#141c16]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#141d15]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#141d16]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#151b17]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#151c16]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#161c17]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#161d17]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#161d18]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#161e18]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#161f17]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#161f18]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#162017]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#162018]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#16251b]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#171e18]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#172018]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#172019]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#182019]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#18201a]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#18221a]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#18221b]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#18231a]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#18241b]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#18251a]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#18261e]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#19221b]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#19231b]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a221c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a231b]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a231c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a241b]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a241c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a241d]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a251b]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a251c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a251d]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1a261c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b221c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b221d]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b231c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b231d]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b251c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b251d]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b251f]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b261e]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b271d]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b2b22]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1b3d36]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1c241e]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1c261e]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1c271e]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1c271f]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1c291f]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1c2c21]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1d251e]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1d261e]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1d261f]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1d2720]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1e241f]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1e251f]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1e2520]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1e2720]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1e2820]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1e2a20]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1e2a21]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1e2b20]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1e2c20]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1f2820]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1f2821]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1f2a21]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1f2c21]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1f2d22]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1f2e23]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1f3632]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#1f382b]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#202b22]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#202c22]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#203f27]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#213024]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#213025]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#222924]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#223024]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#223326]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#232c25]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#232d25]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#232f25]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#232f26]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#233126]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#233226]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#233827]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#243127]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#243327]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#243d2c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#253327]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#262c26]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#263e30]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#27332a]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#284030]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#2a362d]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#2a382c]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#2b372d]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#2b4b37]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#2c3d2f]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#2d3a2f]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#2e3e31]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#2f3f33]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#303d33]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#304434]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#3d543e]"],
+[data-theme="crimson-adrenaline"] [class*="border-[#709978]"],
+[data-theme="crimson-adrenaline"] [class*="border-emerald"],
+[data-theme="crimson-adrenaline"] [class*="border-green"] {
+  border-color: var(--ui-line) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="hover:border-[#"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:border-emerald"]:hover {
+  border-color: var(--ui-accent-border) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="border-t-[#"] {
+  border-top-color: var(--ui-accent) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="border-l-[#"] {
+  border-left-color: var(--ui-accent) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="divide-[#"] {
+  border-color: var(--ui-line) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="text-[#709978]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#a9d1b0]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#c5e6cc]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#81caa9]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#8cd99d]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#7cd5c4]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#a4dbc1]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#a4c9ad]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#a9bcae]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#4ca398]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#5ea386]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#91c5a7]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#86efac]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#a7f3d0]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#6ee7b7]"],
+[data-theme="crimson-adrenaline"] [class*="text-emerald"],
+[data-theme="crimson-adrenaline"] [class*="text-green"] {
+  color: var(--ui-accent-text) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="text-[#5a6b5e]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#829285]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#303f34]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#324536]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#334237]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#353d36]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#3a4a3e]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#3a4f3e]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#3f5043]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#405244]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#415546]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#435246]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#4a594c]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#4e6453]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#4f6454]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#507d72]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#526355]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#55695a]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#556e5d]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#5e7564]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#5e7765]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#617364]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#637d68]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#687f6e]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#6f7e73]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#708573]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#718274]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#719277]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#728574]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#738f7a]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#788e7d]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#7a9480]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#7a9d82]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#86a58e]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#8a9a8c]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#829688]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#9bb0a0]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#9ba89d]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#9eb0a1]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#a3ada3]"] {
+  color: var(--ui-ink-subtle) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="text-[#c8d8cb]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#c9d1c9]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#c6d1c8]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#d0e0d6]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#e0e7e0]"],
+[data-theme="crimson-adrenaline"] [class*="text-[#d1dad1]"] {
+  color: var(--ui-ink) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="hover:text-[#a9d1b0]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:text-[#aee0c3]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:text-[#709978]"]:hover,
+[data-theme="crimson-adrenaline"] [class*="hover:text-emerald"]:hover,
+[data-theme="crimson-adrenaline"] [class*="group-hover:text-[#a9d1b0]"],
+[data-theme="crimson-adrenaline"] [class*="group-hover:text-emerald"] {
+  color: var(--ui-accent-hover) !important;
+}
+
+[data-theme="crimson-adrenaline"] svg[class*="text-[#a9d1b0]"],
+[data-theme="crimson-adrenaline"] svg[class*="text-[#709978]"],
+[data-theme="crimson-adrenaline"] svg[class*="text-[#5ea386]"],
+[data-theme="crimson-adrenaline"] svg[class*="text-emerald"] {
+  color: var(--ui-accent-text) !important;
+}
+
+[data-theme="crimson-adrenaline"] svg[class*="text-[#5a6b5e]"] {
+  color: var(--ui-ink-subtle) !important;
+}
+
+[data-theme="crimson-adrenaline"] input,
+[data-theme="crimson-adrenaline"] textarea,
+[data-theme="crimson-adrenaline"] select {
+  background-color: var(--ui-surface) !important;
+  border-color: var(--ui-line) !important;
+  color: var(--ui-ink) !important;
+}
+
+[data-theme="crimson-adrenaline"] input::placeholder,
+[data-theme="crimson-adrenaline"] textarea::placeholder {
+  color: var(--ui-ink-subtle) !important;
+}
+
+[data-theme="crimson-adrenaline"] input:focus,
+[data-theme="crimson-adrenaline"] textarea:focus,
+[data-theme="crimson-adrenaline"] select:focus {
   border-color: var(--ui-accent) !important;
   outline: none !important;
 }
@@ -2334,6 +2771,11 @@
   background-color: var(--ui-surface) !important;
 }
 
+[data-theme="crimson-adrenaline"] [class*="bg-[#090d0b]"],
+[data-theme="crimson-adrenaline"] [class*="bg-[#090f0c]"] {
+  background-color: var(--ui-surface) !important;
+}
+
 [data-theme="warm-archival"] [class*="bg-[#090d0b]"],
 [data-theme="warm-archival"] [class*="bg-[#090f0c]"] {
   background-color: var(--ui-surface-alt) !important;
@@ -2344,6 +2786,10 @@
 }
 
 [data-theme="archival-dusk"] [class*="text-[#cbd5e1]"] {
+  color: var(--ui-ink-muted) !important;
+}
+
+[data-theme="crimson-adrenaline"] [class*="text-[#cbd5e1]"] {
   color: var(--ui-ink-muted) !important;
 }
 
@@ -2522,6 +2968,12 @@
 [data-theme="starlight"] ::selection,
 [data-theme="starlight"] *::selection {
   background-color: rgba(161, 161, 170, 0.35) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="crimson-adrenaline"] ::selection,
+[data-theme="crimson-adrenaline"] *::selection {
+  background-color: rgba(225, 29, 72, 0.34) !important;
   color: #ffffff !important;
 }
 

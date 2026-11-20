@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 
-export type WikiTheme = 'emerald' | 'starlight' | 'archival-dusk' | 'warm-archival';
+export type WikiTheme = 'emerald' | 'starlight' | 'archival-dusk' | 'warm-archival' | 'crimson-adrenaline';
 
 export type BaseWikiTheme = Exclude<WikiTheme, 'starlight'>;
 
@@ -43,6 +43,15 @@ export const WIKI_THEMES: ThemeMeta[] = [
     isDark: false,
   },
   {
+    id: 'crimson-adrenaline',
+    label: 'Crimson Adrenaline',
+    description: 'Obsidian burgundy & arterial rose ink',
+    swatchBg: '#150d10',
+    swatchAccent: '#e11d48',
+    themeColor: '#0d080a',
+    isDark: true,
+  },
+  {
     id: 'starlight',
     label: 'Starlight Obsidian',
     description: 'Celestial void & monochrome silver',
@@ -82,12 +91,18 @@ function isValidTheme(value: string | null | undefined): value is WikiTheme {
     value === 'emerald' ||
     value === 'starlight' ||
     value === 'archival-dusk' ||
-    value === 'warm-archival'
+    value === 'warm-archival' ||
+    value === 'crimson-adrenaline'
   );
 }
 
 function isBaseTheme(value: string | null | undefined): value is BaseWikiTheme {
-  return value === 'emerald' || value === 'archival-dusk' || value === 'warm-archival';
+  return (
+    value === 'emerald' ||
+    value === 'archival-dusk' ||
+    value === 'warm-archival' ||
+    value === 'crimson-adrenaline'
+  );
 }
 
 function readWindowNameTheme(field: '__bwTheme' | '__bwBaseTheme'): string | null {

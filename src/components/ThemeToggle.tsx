@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Sparkles, Moon, Sun, Sunset } from 'lucide-react';
+import { Sparkles, Moon, Sun, Sunset, HeartPulse } from 'lucide-react';
 import { useTheme, WIKI_THEMES, WikiTheme } from '../context/ThemeContext';
 
 interface ThemeToggleProps {
@@ -15,6 +15,8 @@ function ThemeIcon({ theme }: { theme: WikiTheme }) {
       return <Sunset className="w-3.5 h-3.5 text-accent-text group-hover:scale-110 transition-transform duration-200" />;
     case 'warm-archival':
       return <Sun className="w-3.5 h-3.5 text-accent-text group-hover:scale-110 transition-transform duration-200" />;
+    case 'crimson-adrenaline':
+      return <HeartPulse className="w-3.5 h-3.5 text-accent-text group-hover:scale-110 transition-transform duration-200" />;
     case 'emerald':
     default:
       return <Moon className="w-3.5 h-3.5 text-accent-text group-hover:scale-110 transition-transform duration-200" />;

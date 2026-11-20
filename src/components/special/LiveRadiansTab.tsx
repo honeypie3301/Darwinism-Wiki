@@ -90,6 +90,8 @@ export default function LiveRadiansTab({ visitorId }: LiveRadiansTabProps) {
           return { stroke: '180, 83, 9', glow: '180, 83, 9', solid: '#b45309' };
         case 'archival-dusk':
           return { stroke: '229, 154, 71', glow: '217, 130, 43', solid: '#f3bf73' };
+        case 'crimson-adrenaline':
+          return { stroke: '251, 113, 133', glow: '225, 29, 72', solid: '#fda4af' };
         case 'starlight':
           return { stroke: '228, 228, 231', glow: '161, 161, 170', solid: '#f4f4f5' };
         case 'emerald':
@@ -504,7 +506,9 @@ export default function LiveRadiansTab({ visitorId }: LiveRadiansTabProps) {
                     ? 'Archival Dusk'
                     : theme === 'warm-archival'
                       ? 'Warm Archival'
-                      : 'Emerald Forest'}
+                      : theme === 'crimson-adrenaline'
+                        ? 'Crimson Adrenaline'
+                        : 'Emerald Forest'}
                   . Switch to Starlight to see the live rotation in the background.
                 </span>
                 <button
