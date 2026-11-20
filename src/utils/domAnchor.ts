@@ -148,8 +148,10 @@ export function encodeDomPath(el: HTMLElement, mainEl: HTMLElement): string | nu
     const parent = cur.parentElement;
     if (!parent) break;
     const tag = cur.tagName.toLowerCase();
-    const index = Array.prototype.indexOf.call(parent.children, cur);
-    if (index < 0) return null;
+    let index = 0;
+    for (let sib = cur.previousElementSibling; sib; sib = sib.previousElementSibling) {
+      index += 1;
+    }
     segments.push(`${tag}:${index}`);
     cur = parent;
   }
@@ -230,24 +232,24 @@ export function findAnchorBlock(
       return null;
     }
     const tag = cur.tagName;
-    const rect = cur.getBoundingClientRect();
+    const isLeaf = SEMANTIC_LEAF_BLOCKS.has(tag);
+    const isContainer = CONTAINER_BLOCKS.has(tag);
+    const hasAnchorId = Boolean(cur.dataset.anchorId);
 
-    if (rect.width >= 12 && rect.height >= 12) {
-      if (preferTextContainer) {
-        if (
-          SEMANTIC_LEAF_BLOCKS.has(tag) ||
-          (CONTAINER_BLOCKS.has(tag) && rect.height <= 900)
-        ) {
+    if (preferTextContainer) {
+      if (isLeaf || isContainer) {
+        const rect = cur.getBoundingClientRect();
+        if (rect.width >= 12 && rect.height >= 12 && (isLeaf || rect.height <= 900)) {
           return cur;
         }
-      } else {
-        if (SEMANTIC_LEAF_BLOCKS.has(tag) && rect.height <= 640) {
+      }
+    } else if (isLeaf || (!fallbackBlock && (hasAnchorId || isContainer))) {
+      const rect = cur.getBoundingClientRect();
+      if (rect.width >= 12 && rect.height >= 12) {
+        if (isLeaf && rect.height <= 640) {
           return cur;
         }
-        if (
-          !fallbackBlock &&
-          (cur.dataset.anchorId || (CONTAINER_BLOCKS.has(tag) && rect.height <= 420 && rect.width <= 1100))
-        ) {
+        if (!fallbackBlock && (hasAnchorId || (isContainer && rect.height <= 420 && rect.width <= 1100))) {
           fallbackBlock = cur;
         }
       }

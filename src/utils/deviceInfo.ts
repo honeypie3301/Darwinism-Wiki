@@ -7,7 +7,12 @@ export interface ClientEnvironment {
   browserVersion?: string;
 }
 
+let cachedDefaultEnv: ClientEnvironment | null = null;
+
 export function detectClientEnvironment(customUserAgent?: string): ClientEnvironment {
+  if (!customUserAgent && cachedDefaultEnv) {
+    return cachedDefaultEnv;
+  }
   const nav = typeof navigator !== 'undefined' ? navigator : null;
   const ua = customUserAgent || (nav ? nav.userAgent : '') || '';
   const uaData = (nav as unknown as { userAgentData?: {
@@ -254,7 +259,7 @@ export function detectClientEnvironment(customUserAgent?: string): ClientEnviron
   const osDisplay = osVersion ? `${os} ${osVersion.split('.')[0]}` : os;
   const browserDisplay = browserVersion ? `${browser} ${browserVersion.split('.')[0]}` : browser;
 
-  return {
+  const result: ClientEnvironment = {
     os,
     browser,
     deviceType,
@@ -262,4 +267,10 @@ export function detectClientEnvironment(customUserAgent?: string): ClientEnviron
     osVersion,
     browserVersion
   };
+
+  if (!customUserAgent) {
+    cachedDefaultEnv = result;
+  }
+
+  return result;
 }

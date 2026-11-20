@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
-import { collection, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
-import { db, hasConfig, firebaseConfigDetails } from '../lib/firebase';
+import type {
+  Firestore,
+  collection as collectionFn,
+  doc as docFn,
+  onSnapshot as onSnapshotFn,
+  setDoc as setDocFn,
+  updateDoc as updateDocFn,
+} from 'firebase/firestore';
 import { detectClientEnvironment } from './deviceInfo';
 import { CursorStyleId, normalizeCursorStyle } from '../components/special/MacOsCursorSvg';
 import {
@@ -9,6 +15,42 @@ import {
   sanitizePointerAnchor,
   sanitizeSelectionAnchor,
 } from './domAnchor';
+
+interface FirebaseModules {
+  db: Firestore | null;
+  hasConfig: boolean;
+  firebaseConfigDetails: { projectId: string; apiKey: string; databaseId: string };
+  collection: typeof collectionFn;
+  doc: typeof docFn;
+  onSnapshot: typeof onSnapshotFn;
+  setDoc: typeof setDocFn;
+  updateDoc: typeof updateDocFn;
+}
+
+let fbCache: FirebaseModules | null = null;
+let fbPromise: Promise<FirebaseModules | null> | null = null;
+
+async function ensureFirebaseModules(): Promise<FirebaseModules | null> {
+  if (fbCache) return fbCache;
+  if (!fbPromise) {
+    fbPromise = Promise.all([import('../lib/firebase'), import('firebase/firestore')])
+      .then(([fbLib, fs]) => {
+        fbCache = {
+          db: fbLib.db,
+          hasConfig: fbLib.hasConfig,
+          firebaseConfigDetails: fbLib.firebaseConfigDetails,
+          collection: fs.collection,
+          doc: fs.doc,
+          onSnapshot: fs.onSnapshot,
+          setDoc: fs.setDoc,
+          updateDoc: fs.updateDoc,
+        };
+        return fbCache;
+      })
+      .catch(() => null);
+  }
+  return fbPromise;
+}
 
 export type { PointerBlockAnchor, SelectionAnchor };
 
@@ -803,27 +845,30 @@ async function probeAndConnectWebSocket() {
 }
 
 function subscribeFirestoreConfig() {
-  if (!hasConfig || !db || unsubscribeConfigSnap) return;
-  try {
-    const configRef = doc(db, 'stats', 'cursors_control');
-    unsubscribeConfigSnap = onSnapshot(
-      configRef,
-      (snap) => {
-        transportStatus.firestoreConnected = true;
-        notifyTransportListeners();
-        if (snap.exists()) {
-          const data = snap.data() as Partial<CursorsGlobalConfig>;
-          if (typeof data.enabled === 'boolean') {
-            applyConfigLocally(data, true);
+  if (unsubscribeConfigSnap) return;
+  void ensureFirebaseModules().then((fb) => {
+    if (!fb || !fb.hasConfig || !fb.db || unsubscribeConfigSnap || !isEngineStarted) return;
+    try {
+      const configRef = fb.doc(fb.db, 'stats', 'cursors_control');
+      unsubscribeConfigSnap = fb.onSnapshot(
+        configRef,
+        (snap) => {
+          transportStatus.firestoreConnected = true;
+          notifyTransportListeners();
+          if (snap.exists()) {
+            const data = snap.data() as Partial<CursorsGlobalConfig>;
+            if (typeof data.enabled === 'boolean') {
+              applyConfigLocally(data, true);
+            }
           }
+        },
+        () => {
+          transportStatus.firestoreConnected = false;
+          notifyTransportListeners();
         }
-      },
-      () => {
-        transportStatus.firestoreConnected = false;
-        notifyTransportListeners();
-      }
-    );
-  } catch {}
+      );
+    } catch {}
+  });
 }
 
 function subscribeFirestoreRoom(slug: string) {
@@ -831,48 +876,54 @@ function subscribeFirestoreRoom(slug: string) {
     unsubscribeRoomSnap();
     unsubscribeRoomSnap = null;
   }
-  if (!hasConfig || !db) return;
+  const expectedSlug = slug;
+  void ensureFirebaseModules().then((fb) => {
+    if (!fb || !fb.hasConfig || !fb.db || !isEngineStarted || activeSlug !== expectedSlug) return;
+    if (unsubscribeRoomSnap) {
+      unsubscribeRoomSnap();
+      unsubscribeRoomSnap = null;
+    }
+    try {
+      const roomDocId = `cursors_room_${sanitizeSlug(expectedSlug)}`;
+      const roomRef = fb.doc(fb.db, 'stats', roomDocId);
+      unsubscribeRoomSnap = fb.onSnapshot(
+        roomRef,
+        (snap) => {
+          transportStatus.firestoreConnected = true;
+          notifyTransportListeners();
+          if (!snap.exists()) return;
+          const data = snap.data() as { cursors?: Record<string, RemoteCursorData> };
+          const cursorsMap = data?.cursors;
+          if (!cursorsMap || typeof cursorsMap !== 'object') return;
 
-  try {
-    const roomDocId = `cursors_room_${sanitizeSlug(slug)}`;
-    const roomRef = doc(db, 'stats', roomDocId);
-    unsubscribeRoomSnap = onSnapshot(
-      roomRef,
-      (snap) => {
-        transportStatus.firestoreConnected = true;
-        notifyTransportListeners();
-        if (!snap.exists()) return;
-        const data = snap.data() as { cursors?: Record<string, RemoteCursorData> };
-        const cursorsMap = data?.cursors;
-        if (!cursorsMap || typeof cursorsMap !== 'object') return;
+          const now = Date.now();
+          const activeIdsInSnapshot = new Set<string>();
 
-        const now = Date.now();
-        const activeIdsInSnapshot = new Set<string>();
-
-        for (const [sid, c] of Object.entries(cursorsMap)) {
-          if (!c || typeof c !== 'object' || sid === LOCAL_SESSION_ID) continue;
-          if (!c.active || now - Number(c.ts || 0) > STALE_CURSOR_MS) {
-            removeRemoteCursor(sid, slug);
-          } else {
-            activeIdsInSnapshot.add(sid);
-            ingestRemoteCursor({ ...c, sessionId: sid, slug }, 'firestore');
+          for (const [sid, c] of Object.entries(cursorsMap)) {
+            if (!c || typeof c !== 'object' || sid === LOCAL_SESSION_ID) continue;
+            if (!c.active || now - Number(c.ts || 0) > STALE_CURSOR_MS) {
+              removeRemoteCursor(sid, expectedSlug);
+            } else {
+              activeIdsInSnapshot.add(sid);
+              ingestRemoteCursor({ ...c, sessionId: sid, slug: expectedSlug }, 'firestore');
+            }
           }
-        }
 
-        // Fade out any cursor from Firestore source that vanished cleanly
-        for (const [sid, existing] of remoteCursors.entries()) {
-          if (existing.slug === slug && !existing.leaving && !activeIdsInSnapshot.has(sid) && now - existing.ts > 2000 && !transportStatus.wsConnected) {
-            scheduleCursorFadeOut(sid);
+          // Fade out any cursor from Firestore source that vanished cleanly
+          for (const [sid, existing] of remoteCursors.entries()) {
+            if (existing.slug === expectedSlug && !existing.leaving && !activeIdsInSnapshot.has(sid) && now - existing.ts > 2000 && !transportStatus.wsConnected) {
+              scheduleCursorFadeOut(sid);
+            }
           }
+          notifyFrameListeners();
+          notifyRosterListeners();
+        },
+        () => {
+          // Keep silent if offline
         }
-        notifyFrameListeners();
-        notifyRosterListeners();
-      },
-      () => {
-        // Keep silent if offline
-      }
-    );
-  } catch {}
+      );
+    } catch {}
+  });
 }
 
 function buildLocalPayload(
@@ -923,11 +974,11 @@ function buildLocalPayload(
 }
 
 function sendFirestoreCursorPayload(payload: RemoteCursorData, targetSlug = payload.slug) {
-  if (!hasConfig || !db) return;
+  if (!fbCache || !fbCache.hasConfig || !fbCache.db) return;
   try {
     const roomDocId = `cursors_room_${sanitizeSlug(targetSlug)}`;
-    const roomRef = doc(db, 'stats', roomDocId);
-    void setDoc(
+    const roomRef = fbCache.doc(fbCache.db, 'stats', roomDocId);
+    void fbCache.setDoc(
       roomRef,
       {
         cursors: {
@@ -941,12 +992,13 @@ function sendFirestoreCursorPayload(payload: RemoteCursorData, targetSlug = payl
 }
 
 function flushLeaveBeacon(targetSlug: string) {
-  if (!hasConfig || !targetSlug) return;
+  if (!fbCache || !fbCache.hasConfig || !targetSlug) return;
   try {
     const roomDocId = `cursors_room_${sanitizeSlug(targetSlug)}`;
-    const projectId = firebaseConfigDetails.projectId || 'backwoods-wiki';
-    const databaseId = firebaseConfigDetails.databaseId || '(default)';
-    const keyParam = firebaseConfigDetails.apiKey ? `&key=${encodeURIComponent(firebaseConfigDetails.apiKey)}` : '';
+    const details = fbCache.firebaseConfigDetails;
+    const projectId = details.projectId || 'backwoods-wiki';
+    const databaseId = details.databaseId || '(default)';
+    const keyParam = details.apiKey ? `&key=${encodeURIComponent(details.apiKey)}` : '';
     const url = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases/${encodeURIComponent(databaseId)}/documents/stats/${encodeURIComponent(roomDocId)}?updateMask.fieldPaths=cursors.${encodeURIComponent(LOCAL_SESSION_ID)}${keyParam}`;
     const body = JSON.stringify({
       fields: {
@@ -986,9 +1038,19 @@ export function initCursorSync(initialSlug = 'home'): () => void {
   isEngineStarted = true;
 
   setupBroadcastChannel();
-  subscribeFirestoreConfig();
-  subscribeFirestoreRoom(activeSlug);
-  void probeAndConnectWebSocket();
+
+  const startRemoteSync = () => {
+    if (!isEngineStarted) return;
+    subscribeFirestoreConfig();
+    subscribeFirestoreRoom(activeSlug);
+    void probeAndConnectWebSocket();
+  };
+
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(startRemoteSync, { timeout: 300 });
+  } else {
+    setTimeout(startRemoteSync, 50);
+  }
 
   staleSweepTimer = setInterval(() => {
     const now = Date.now();
@@ -1017,10 +1079,10 @@ export function initCursorSync(initialSlug = 'home'): () => void {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ type: 'cursor:update', cursor: payload }));
     }
-    if (hasConfig && db) {
+    if (fbCache && fbCache.hasConfig && fbCache.db) {
       const roomDocId = `cursors_room_${sanitizeSlug(activeSlug)}`;
-      const roomRef = doc(db, 'stats', roomDocId);
-      void updateDoc(roomRef, {
+      const roomRef = fbCache.doc(fbCache.db, 'stats', roomDocId);
+      void fbCache.updateDoc(roomRef, {
         [`cursors.${LOCAL_SESSION_ID}.ts`]: now,
         [`cursors.${LOCAL_SESSION_ID}.active`]: true,
       }).catch(() => {
@@ -1357,12 +1419,13 @@ export function broadcastCursorConfigUpdate(
     ws.send(JSON.stringify({ type: 'cursors:config', config: updated }));
   }
 
-  if (hasConfig && db) {
+  void ensureFirebaseModules().then((fb) => {
+    if (!fb || !fb.hasConfig || !fb.db) return;
     try {
-      const configRef = doc(db, 'stats', 'cursors_control');
-      void setDoc(configRef, updated, { merge: true }).catch(() => {});
+      const configRef = fb.doc(fb.db, 'stats', 'cursors_control');
+      void fb.setDoc(configRef, updated, { merge: true }).catch(() => {});
     } catch {}
-  }
+  });
 }
 
 export function setLocalCursorHide(hidden: boolean) {
@@ -1552,6 +1615,10 @@ export function getRemoteCursorsMap(): Map<string, RemoteCursorData> {
   return remoteCursors;
 }
 
+export function isLocalCursorBroadcastActive(): boolean {
+  return currentConfig.enabled && !localHide && !stealthInspection && cachedIsDesktop;
+}
+
 export function getTransportStatus(): TransportStatus {
   return { ...transportStatus };
 }
@@ -1638,49 +1705,52 @@ function startTelemetryPresenceStream() {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'cursor:subscribe_all', enabled: true }));
   }
-  if (hasConfig && db && !unsubscribeGlobalRoomsSnap) {
-    try {
-      unsubscribeGlobalRoomsSnap = onSnapshot(
-        collection(db, 'stats'),
-        (querySnap) => {
-          if (telemetryWatcherCount <= 0) return;
-          const now = Date.now();
-          const nextMap = new Map<string, RemoteCursorData>();
-          querySnap.forEach((docSnap) => {
-            if (!docSnap.id.startsWith('cursors_room_')) return;
-            const slug = docSnap.id.slice('cursors_room_'.length) || 'home';
-            const data = docSnap.data() as { cursors?: Record<string, RemoteCursorData> };
-            const cursorsMap = data?.cursors;
-            if (!cursorsMap || typeof cursorsMap !== 'object') return;
-            for (const [sid, c] of Object.entries(cursorsMap)) {
-              if (!c || typeof c !== 'object' || sid === LOCAL_SESSION_ID) continue;
-              if (c.active && now - Number(c.ts || 0) <= STALE_CURSOR_MS) {
-                nextMap.set(sid, {
-                  ...c,
-                  sessionId: sid,
-                  slug: c.slug || slug,
-                  leaving: false,
-                  color: c.color || getVisitorColor(c.visitorId || sid),
-                });
+  if (!unsubscribeGlobalRoomsSnap) {
+    void ensureFirebaseModules().then((fb) => {
+      if (!fb || !fb.hasConfig || !fb.db || unsubscribeGlobalRoomsSnap || telemetryWatcherCount <= 0) return;
+      try {
+        unsubscribeGlobalRoomsSnap = fb.onSnapshot(
+          fb.collection(fb.db, 'stats'),
+          (querySnap) => {
+            if (telemetryWatcherCount <= 0) return;
+            const now = Date.now();
+            const nextMap = new Map<string, RemoteCursorData>();
+            querySnap.forEach((docSnap) => {
+              if (!docSnap.id.startsWith('cursors_room_')) return;
+              const slug = docSnap.id.slice('cursors_room_'.length) || 'home';
+              const data = docSnap.data() as { cursors?: Record<string, RemoteCursorData> };
+              const cursorsMap = data?.cursors;
+              if (!cursorsMap || typeof cursorsMap !== 'object') return;
+              for (const [sid, c] of Object.entries(cursorsMap)) {
+                if (!c || typeof c !== 'object' || sid === LOCAL_SESSION_ID) continue;
+                if (c.active && now - Number(c.ts || 0) <= STALE_CURSOR_MS) {
+                  nextMap.set(sid, {
+                    ...c,
+                    sessionId: sid,
+                    slug: c.slug || slug,
+                    leaving: false,
+                    color: c.color || getVisitorColor(c.visitorId || sid),
+                  });
+                }
+              }
+            });
+            // Preserve any fresher live WS peer timestamps
+            for (const [sid, existing] of globalPeers.entries()) {
+              const snapPeer = nextMap.get(sid);
+              if (snapPeer && existing.ts > snapPeer.ts + 25) {
+                nextMap.set(sid, existing);
+              } else if (!snapPeer && transportStatus.wsConnected && now - existing.ts <= STALE_CURSOR_MS) {
+                nextMap.set(sid, existing);
               }
             }
-          });
-          // Preserve any fresher live WS peer timestamps
-          for (const [sid, existing] of globalPeers.entries()) {
-            const snapPeer = nextMap.get(sid);
-            if (snapPeer && existing.ts > snapPeer.ts + 25) {
-              nextMap.set(sid, existing);
-            } else if (!snapPeer && transportStatus.wsConnected && now - existing.ts <= STALE_CURSOR_MS) {
-              nextMap.set(sid, existing);
-            }
-          }
-          globalPeers.clear();
-          nextMap.forEach((v, k) => globalPeers.set(k, v));
-          notifyGlobalPresenceListeners(true);
-        },
-        () => {}
-      );
-    } catch {}
+            globalPeers.clear();
+            nextMap.forEach((v, k) => globalPeers.set(k, v));
+            notifyGlobalPresenceListeners(true);
+          },
+          () => {}
+        );
+      } catch {}
+    });
   }
 }
 
@@ -1774,7 +1844,7 @@ export function usePageOccupancy(enabled: boolean): Record<string, number> {
 
   useEffect(() => {
     if (!enabled) {
-      setOccupancy({});
+      setOccupancy((prev) => (Object.keys(prev).length === 0 ? prev : {}));
       return;
     }
     const next: Record<string, number> = {};
@@ -1782,7 +1852,14 @@ export function usePageOccupancy(enabled: boolean): Record<string, number> {
       const slug = p.slug || 'home';
       next[slug] = (next[slug] || 0) + 1;
     }
-    setOccupancy(next);
+    setOccupancy((prev) => {
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(next);
+      if (prevKeys.length === nextKeys.length && nextKeys.every((k) => prev[k] === next[k])) {
+        return prev;
+      }
+      return next;
+    });
   }, [enabled, peers]);
 
   return occupancy;

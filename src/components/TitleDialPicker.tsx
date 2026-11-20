@@ -112,22 +112,25 @@ export default function TitleDialPicker() {
     const el = containerRef.current;
     if (!el) return;
 
-    const updateWidth = () => {
-      setContainerWidth(el.clientWidth);
+    const updateWidth = (nextWidth?: number) => {
+      const width = Math.round(nextWidth ?? el.clientWidth);
+      setContainerWidth((prev) => (prev === width ? prev : width));
     };
 
     updateWidth();
 
     if (typeof ResizeObserver !== 'undefined') {
-      const observer = new ResizeObserver(() => {
-        updateWidth();
+      const observer = new ResizeObserver((entries) => {
+        const entry = entries[0];
+        updateWidth(entry ? entry.contentRect.width : undefined);
       });
       observer.observe(el);
       return () => observer.disconnect();
     }
 
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
+    const onResize = () => updateWidth();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   const isCompact = containerWidth > 0 && containerWidth < 340;
@@ -212,8 +215,13 @@ export default function TitleDialPicker() {
     }
 
     isSettling.current = true;
+    let lastTs = performance.now();
 
-    const step = () => {
+    const step = (now: number) => {
+      const dt = Math.min(0.05, Math.max(0.001, (now - lastTs) / 1000));
+      lastTs = now;
+      const alpha = 1 - Math.exp(-15 * dt);
+
       setPosition(prev => {
         const diff = targetIndex - prev;
         if (Math.abs(diff) < 0.005) {
@@ -224,7 +232,7 @@ export default function TitleDialPicker() {
           }
           return targetIndex;
         }
-        return prev + diff * 0.22;
+        return prev + diff * alpha;
       });
 
       if (isSettling.current) {
@@ -406,14 +414,14 @@ export default function TitleDialPicker() {
               }}
               style={{
                 height: `${itemHeight}px`,
-                transform: `translateY(${translateY}px) rotateX(${rotateX}deg) scale(${scale})`,
+                transform: `translate3d(0, ${translateY}px, 0) rotateX(${rotateX}deg) scale(${scale})`,
                 opacity: opacity,
                 zIndex: Math.round(10 - absOffset * 2),
                 ...titleTypographyStyle,
               }}
               className={`
                 absolute left-0 right-0 flex items-center justify-center px-1 text-center
-                font-display text-[clamp(1.25rem,6cqi,3rem)] font-bold tracking-[clamp(0.04em,0.8cqi,0.18em)] uppercase transition-all duration-75 select-none
+                font-display text-[clamp(1.25rem,6cqi,3rem)] font-bold tracking-[clamp(0.04em,0.8cqi,0.18em)] uppercase transition-colors duration-150 will-change-transform select-none
                 ${isCompact ? 'whitespace-normal text-balance' : 'whitespace-nowrap'}
                 ${isCenter ? 'text-ink' : 'text-accent-text'}
               `}

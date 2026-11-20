@@ -9,8 +9,6 @@
  * ========================================================================================
  */
 import { useState, useEffect } from 'react';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { db, hasConfig } from '../lib/firebase';
 import { CELESTIAL_CONFIG } from '../components/special/StarlightBackground';
 
 export interface CelestialRadiansState {
@@ -119,9 +117,16 @@ export function initRadiansSync(): () => void {
     // Ignore cache parse errors
   }
 
-  // Subscribe to central Firestore cluster under 'stats/radians_control'
-  if (hasConfig && db) {
+  // Subscribe to central Firestore cluster under 'stats/radians_control' asynchronously
+  let cancelled = false;
+  void (async () => {
     try {
+      const [{ hasConfig, db }, { doc, onSnapshot }] = await Promise.all([
+        import('../lib/firebase'),
+        import('firebase/firestore'),
+      ]);
+      if (cancelled || !hasConfig || !db) return;
+
       let hasReceivedInitialSnap = false;
       const radiansDocRef = doc(db, 'stats', 'radians_control');
 
@@ -164,9 +169,10 @@ export function initRadiansSync(): () => void {
     } catch {
       // Operating offline
     }
-  }
+  })();
 
   return () => {
+    cancelled = true;
     if (unsubscribeFirestore) {
       unsubscribeFirestore();
       unsubscribeFirestore = null;
@@ -233,8 +239,12 @@ export function broadcastRadiansUpdate(partial: Partial<CelestialRadiansState>, 
   }
 
   writeDebounceTimer = setTimeout(async () => {
-    if (!hasConfig || !db) return;
     try {
+      const [{ hasConfig, db }, { doc, setDoc }] = await Promise.all([
+        import('../lib/firebase'),
+        import('firebase/firestore'),
+      ]);
+      if (!hasConfig || !db) return;
       const radiansDocRef = doc(db, 'stats', 'radians_control');
       await setDoc(radiansDocRef, updated, { merge: true });
     } catch (err) {

@@ -342,9 +342,11 @@ function WikiContainer() {
       }
 
       if (!isTerminalAuthorizedRef.current) {
-        const probeEl = target.closest<HTMLElement>(
+        const probeTarget = target.closest<HTMLElement>(
           'button, a, [role="button"], [role="tab"], input, select, summary, [data-tab], [data-admin], [data-admin-action], [data-radians], [data-radians-control]'
-        ) || target;
+        );
+        const probeEl = probeTarget || target;
+        const isInteractiveNode = Boolean(probeTarget);
 
         const hrefAttr = (probeEl.getAttribute('href') || target.closest('a[href]')?.getAttribute('href') || '').trim();
         const attrMeta = [
@@ -362,16 +364,6 @@ function WikiContainer() {
         const rawText = (probeEl.textContent || '').replace(/\s+/g, ' ').trim();
         const shortText = rawText.length <= 80 ? rawText : '';
         const combinedSignal = `${attrMeta} ${shortText}`;
-
-        const isInteractiveNode = Boolean(
-          target.closest('button, a, [role="button"], [role="tab"], input, select, summary, [data-tab], [data-admin], [data-admin-action], [data-radians], [data-radians-control]')
-        );
-        const isHiddenInteractive =
-          isInteractiveNode &&
-          (probeEl.hasAttribute('hidden') ||
-            Boolean(probeEl.closest('[hidden]')) ||
-            window.getComputedStyle(probeEl).display === 'none' ||
-            window.getComputedStyle(probeEl).visibility === 'hidden');
 
         if (radiansProbeRegex.test(combinedSignal) || /^#?\/?radians\b/i.test(hrefAttr)) {
           trackHoneyProbe({
@@ -393,6 +385,16 @@ function WikiContainer() {
             href: hrefAttr || undefined
           });
           return;
+        }
+
+        let isHiddenInteractive = false;
+        if (isInteractiveNode) {
+          if (probeEl.hasAttribute('hidden') || Boolean(probeEl.closest('[hidden]'))) {
+            isHiddenInteractive = true;
+          } else {
+            const computed = window.getComputedStyle(probeEl);
+            isHiddenInteractive = computed.display === 'none' || computed.visibility === 'hidden';
+          }
         }
 
         if (isHiddenInteractive) {
@@ -503,6 +505,18 @@ function WikiContainer() {
     return () => window.removeEventListener('click', handleGlobalClick, { capture: true });
   }, [activeSlug, articles]);
 
+  const searchIndex = React.useMemo(() => {
+    return articles.map(article => {
+      const content = articlesContent[article.slug] || '';
+      return {
+        article,
+        content,
+        lowerContent: content.toLowerCase(),
+        lowerTitle: article.title.toLowerCase(),
+      };
+    });
+  }, [articles, articlesContent]);
+
   // 2. Perform deep-content relevance search
   const searchResults = React.useMemo(() => {
     if (!deferredSearchQuery.trim()) return [];
@@ -514,11 +528,7 @@ function WikiContainer() {
       snippet: string;
     }> = [];
 
-    articles.forEach(article => {
-      const content = articlesContent[article.slug] || '';
-      const lowerContent = content.toLowerCase();
-      const lowerTitle = article.title.toLowerCase();
-
+    searchIndex.forEach(({ article, content, lowerContent, lowerTitle }) => {
       let score = 0;
       let snippet = '';
 
@@ -568,7 +578,7 @@ function WikiContainer() {
 
     // Sort by relevance score descending
     return results.sort((a, b) => b.score - a.score);
-  }, [deferredSearchQuery, articles, articlesContent]);
+  }, [deferredSearchQuery, searchIndex]);
 
   // Filter sidebar articles based on search query
   const filteredArticles = React.useMemo(() => {

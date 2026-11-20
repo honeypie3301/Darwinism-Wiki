@@ -26,6 +26,7 @@ import {
   broadcastLocalSelection,
   setLocalSelectionSnapshot,
   isDesktopPointerCapable,
+  isLocalCursorBroadcastActive,
   isValidHexColor,
   RemoteCursorData,
   SelectionRect,
@@ -207,6 +208,7 @@ export default function LiveCursorsOverlay({
   const isClickingRef = useRef(false);
   const lastSelectionSigRef = useRef<string>('');
 
+  const mainElRef = useRef<HTMLElement | null>(null);
   const layoutCacheRef = useRef({
     mainCenter: typeof window !== 'undefined' ? window.innerWidth / 2 : 512,
     mainWidth: typeof window !== 'undefined' ? window.innerWidth : 1024,
@@ -346,9 +348,18 @@ export default function LiveCursorsOverlay({
     };
   }, [shouldOverrideLocalCursor, cursorSize, localCursorStyle]);
 
+  const getCachedMainElement = useCallback(() => {
+    if (mainElRef.current && mainElRef.current.isConnected) {
+      return mainElRef.current;
+    }
+    const found = getMainElement();
+    mainElRef.current = found;
+    return found;
+  }, []);
+
   const refreshLayoutMetrics = useCallback(() => {
     if (typeof window === 'undefined') return;
-    const mainEl = getMainElement();
+    const mainEl = getCachedMainElement();
     const { center, width } = getContentMetrics(mainEl);
     layoutCacheRef.current = {
       mainCenter: center,
@@ -357,7 +368,7 @@ export default function LiveCursorsOverlay({
       vh: window.innerHeight,
       scrollY: window.scrollY,
     };
-  }, []);
+  }, [getCachedMainElement]);
 
   const computeRemoteTarget = useCallback(
     (c: RemoteCursorData, mainEl: HTMLElement | null, rectCache?: Map<string, DOMRect | null>) => {
@@ -675,8 +686,19 @@ export default function LiveCursorsOverlay({
     let mutationRaf: number | null = null;
     const handleDomShift = () => {
       refreshLayoutMetrics();
-      scheduleRemoteSync(true);
-      setHighlightLayoutTick((v) => v + 1);
+      const map = getRemoteCursorsMap();
+      if (map.size > 0) {
+        scheduleRemoteSync(true);
+        let hasHighlights = false;
+        map.forEach((c) => {
+          if (c.selAnchor || (c.selRects && c.selRects.length > 0)) {
+            hasHighlights = true;
+          }
+        });
+        if (hasHighlights) {
+          setHighlightLayoutTick((v) => v + 1);
+        }
+      }
       if (localTrailRef.current.length > 0 || remoteTrailsRef.current.size > 0) {
         startTrailLoop();
       }
@@ -689,6 +711,9 @@ export default function LiveCursorsOverlay({
 
     const mo = typeof MutationObserver !== 'undefined' && mainEl
       ? new MutationObserver(() => {
+          if (getRemoteCursorsMap().size === 0 && localTrailRef.current.length === 0 && remoteTrailsRef.current.size === 0) {
+            return;
+          }
           if (mutationRaf === null) {
             mutationRaf = requestAnimationFrame(() => {
               mutationRaf = null;
@@ -702,7 +727,11 @@ export default function LiveCursorsOverlay({
     }
 
     const handleScroll = () => {
-      scheduleRemoteSync(true);
+      if (getRemoteCursorsMap().size > 0) {
+        scheduleRemoteSync(true);
+      } else {
+        layoutCacheRef.current.scrollY = window.scrollY;
+      }
       if (localTrailRef.current.length > 0 || remoteTrailsRef.current.size > 0) {
         startTrailLoop();
       }
@@ -776,25 +805,39 @@ export default function LiveCursorsOverlay({
       }
     };
 
-    const handlePointerMove = (e: PointerEvent) => {
-      if (e.pointerType && e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
-      const target = e.target as HTMLElement | null;
-      if (target?.closest('#stats-modal-container')) return;
-      const mainEl = getMainElement();
-      const { center: mainCenter, width: mainWidth } = getContentMetrics(mainEl);
+    let moveRafId: number | null = null;
+    let pendingMove: {
+      clientX: number;
+      clientY: number;
+      target: HTMLElement | null;
+      altKey: boolean;
+    } | null = null;
+
+    const processPointerMove = () => {
+      moveRafId = null;
+      const sample = pendingMove;
+      pendingMove = null;
+      if (!sample) return;
+
+      const isBroadcastActive = isLocalCursorBroadcastActive();
+      const isAltHeld = trailsEnabledRef.current && sample.altKey;
+      if (!isBroadcastActive && !isAltHeld && !isClickingRef.current) {
+        return;
+      }
+
+      const mainEl = getCachedMainElement();
+      const { mainCenter, mainWidth } = layoutCacheRef.current;
       const scrollY = window.scrollY;
-      layoutCacheRef.current.mainCenter = mainCenter;
-      layoutCacheRef.current.mainWidth = mainWidth;
       layoutCacheRef.current.scrollY = scrollY;
 
       if (isClickingRef.current) {
         syncSelectionNow(false);
       }
-      const variant = detectElementCursorVariant(target);
-      const dx = e.clientX - mainCenter;
-      const y = e.clientY + scrollY;
-      const anchor = capturePointerAnchor(e.clientX, e.clientY, target, mainEl);
-      const isAltHeld = trailsEnabledRef.current && Boolean(e.altKey);
+
+      const variant = detectElementCursorVariant(sample.target);
+      const dx = sample.clientX - mainCenter;
+      const y = sample.clientY + scrollY;
+      const anchor = capturePointerAnchor(sample.clientX, sample.clientY, sample.target, mainEl);
 
       lastLocalSampleRef.current = { dx, y, variant, clicking: isClickingRef.current, anchor };
 
@@ -821,7 +864,27 @@ export default function LiveCursorsOverlay({
       }
 
       lastBroadcastedAltRef.current = isAltHeld;
-      broadcastLocalCursorMove(dx, y, mainWidth, isClickingRef.current, variant, isAltHeld, anchor);
+      if (isBroadcastActive) {
+        broadcastLocalCursorMove(dx, y, mainWidth, isClickingRef.current, variant, isAltHeld, anchor);
+      }
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType && e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('#stats-modal-container')) return;
+      if (!isLocalCursorBroadcastActive() && !(trailsEnabledRef.current && e.altKey) && !isClickingRef.current) {
+        return;
+      }
+      pendingMove = {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        target,
+        altKey: Boolean(e.altKey),
+      };
+      if (moveRafId === null) {
+        moveRafId = requestAnimationFrame(processPointerMove);
+      }
     };
 
     const handlePointerDown = (e: PointerEvent) => {
@@ -913,6 +976,7 @@ export default function LiveCursorsOverlay({
     window.addEventListener('unload', handlePageHide);
 
     return () => {
+      if (moveRafId !== null) cancelAnimationFrame(moveRafId);
       if (selDebounceTimer) clearTimeout(selDebounceTimer);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerdown', handlePointerDown);
@@ -924,7 +988,7 @@ export default function LiveCursorsOverlay({
       window.removeEventListener('beforeunload', handlePageHide);
       window.removeEventListener('unload', handlePageHide);
     };
-  }, [shouldOverrideLocalCursor, activeSlug, refreshLayoutMetrics, startTrailLoop]);
+  }, [shouldOverrideLocalCursor, activeSlug, refreshLayoutMetrics, startTrailLoop, getCachedMainElement]);
 
   useEffect(() => {
     if (!pinnedId) return;
@@ -1074,8 +1138,11 @@ export default function LiveCursorsOverlay({
                 data-remote-cursor-root="true"
                 ref={(el) => {
                   if (el) {
+                    const isNew = cursorRefs.current.get(c.sessionId) !== el;
                     cursorRefs.current.set(c.sessionId, el);
-                    scheduleRemoteSync(false);
+                    if (isNew) {
+                      scheduleRemoteSync(false);
+                    }
                   } else {
                     cursorRefs.current.delete(c.sessionId);
                     remoteSmoothRef.current.delete(c.sessionId);
