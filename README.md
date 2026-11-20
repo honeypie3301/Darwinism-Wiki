@@ -1,1 +1,1 @@
-# Wiki for my mod.
+## Wiki of my mod

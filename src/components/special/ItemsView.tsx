@@ -1,22 +1,15 @@
-/**
- * CONSTANT REMINDER 1: AVOID NARRATIVE TONES
- * All descriptions must be factual, technical, and encyclopedic. Do not use storytelling prose.
- *
- * CONSTANT REMINDER 2: WIKI MAINTENANCE NOTE IS FOR MOD UPDATES ONLY
- * In-game mod mechanics and updates only. Never document wiki website changes.
- */
 import React, { useState } from 'react';
-import { 
-  Package, Search, Zap, Compass, 
-  Dna, Sparkles, FlaskConical, ShieldCheck, Flame, Eye
+import {
+  FlaskConical, Search, Sparkles, Compass, Shield, Droplets
 } from 'lucide-react';
 import UpdatedFrame from '../UpdatedFrame';
 import FancyRecipeView from './FancyRecipeView';
+import { trackTelemetryClick } from '../../utils/telemetry';
 
 interface ItemData {
   id: string;
   name: string;
-  category: 'serum' | 'materials' | 'projectiles' | 'utility';
+  category: 'serum' | 'purifier';
   desc: string;
   isUpdated?: boolean;
   stats?: { label: string; value: string }[];
@@ -30,183 +23,131 @@ export default function ItemsView() {
   const [selectedItemId, setSelectedItemId] = useState<string>('darwinism_1_bottle');
 
   const categories = [
-    { id: 'all', name: 'All Potions & Reagents', icon: Package },
-    { id: 'serum', name: 'Darwin Serum Formulations', icon: FlaskConical },
-    { id: 'materials', name: 'Biological Reagents', icon: Dna },
-    { id: 'projectiles', name: 'Tipped Projectiles', icon: Sparkles },
-    { id: 'utility', name: 'Genome Neutralizers', icon: ShieldCheck }
+    { id: 'all', name: 'All Potions', icon: FlaskConical },
+    { id: 'serum', name: 'Darwinism Serums', icon: Sparkles },
+    { id: 'purifier', name: 'Purifiers', icon: Droplets }
   ];
 
   const items: ItemData[] = [
     {
-      id: "darwinism_1_bottle",
-      name: "Potion of Darwinism I",
-      category: "serum",
-      isUpdated: true,
-      desc: "Tier I formulation of Darwin's Serum. Distilled from an Awkward Potion using a Nautilus Shell. Provides baseline attribute modifiers alongside procedural sprint acceleration and low-light night vision.",
+      id: 'darwinism_1_bottle',
+      name: 'Potion of Darwinism (Tier I)',
+      category: 'serum',
+      desc: 'The foundational bio-adaptation brew. Enhances melee power, mining speed, burn recovery, and safe fall distance while unlocking Night Vision, Sprint Speed II, Crouch Jump IV, and emergency Resistance/Regeneration.',
       stats: [
-        { label: "Base Duration", value: "3:00 Minutes (3600 ticks)" },
-        { label: "Attack Damage", value: "+4.0" },
-        { label: "Attack Knockback", value: "+1.0" },
-        { label: "Block Break Speed", value: "+1.0" },
-        { label: "Safe Fall Distance", value: "+1.5 blocks" },
-        { label: "Burning Time", value: "-2.0 seconds" }
+        { label: 'Potion Registry ID', value: 'darwinism:darwinism_1_bottle' },
+        { label: 'Effect ID', value: 'darwinism:darwinism' },
+        { label: 'Duration', value: '3,600 ticks (3:00)' },
+        { label: 'Effect Amplifier', value: '0 (Level I)' },
+        { label: 'Brewing Base', value: 'Awkward Potion (Normal / Splash / Lingering)' },
+        { label: 'Brewing Agent', value: 'minecraft:nautilus_shell' }
       ],
+      recipes: ['darwinism:darwinism_1_bottle'],
       notes: [
-        "Brewed in a Brewing Stand by distilling a Nautilus Shell into an Awkward Potion.",
-        "Kinetic Sprint: Sprinting > 60 ticks applies Movement Speed II (Amplifier 1).",
-        "Kinetic Jump: Sneak + On Ground applies Jump Boost IV.",
-        "Ocular Sight: Ambient light level <= 4 applies Night Vision I.",
-        "Crisis Overdrive: Health < 2 HP applies Resistance IV and Regeneration V (10s)."
+        'Compatible with Potion, Splash Potion, Lingering Potion, and Tipped Arrows ("Arrow of Darwinism").',
+        'Blocked by anti-devolution check if Darwinism II or Darwinism III is currently active ("§9Devolution refused.").',
+        'Serves as the direct brewing base for both Darwinism II and Potion of Milk.'
       ]
     },
     {
-      id: "darwinism_2_bottle",
-      name: "Potion of Darwinism II",
-      category: "serum",
-      isUpdated: true,
-      desc: "Tier II enhanced Darwin's Serum. Distilled from Darwinism I using a Golden Carrot. Expands max health and explosion resistance while shortening sprint activation thresholds.",
+      id: 'darwinism_2_bottle',
+      name: 'Potion of Darwinism (Tier II)',
+      category: 'serum',
+      desc: 'Refined adaptation serum adding +6 Max Health (+3 hearts), +0.3 Explosion Knockback Resistance, faster Sprint Speed III (50-tick charge), Jump Boost VI, and full immunity to Powder Snow freezing.',
       stats: [
-        { label: "Base Duration", value: "3:00 Minutes (3600 ticks)" },
-        { label: "Max Health", value: "+6.0 (+3 Hearts)" },
-        { label: "Explosion Knockback Res", value: "+0.3" },
-        { label: "Safe Fall Distance", value: "+1.5 blocks" },
-        { label: "Attack Damage", value: "+4.0" }
+        { label: 'Potion Registry ID', value: 'darwinism:darwinism_2_bottle' },
+        { label: 'Effect ID', value: 'darwinism:darwinism_2' },
+        { label: 'Duration', value: '4,000 ticks (3:20)' },
+        { label: 'Effect Amplifier', value: '1 (Level II)' },
+        { label: 'Brewing Base', value: 'Potion of Darwinism (Tier I)' },
+        { label: 'Brewing Agent', value: 'minecraft:golden_carrot' }
       ],
+      recipes: ['darwinism:darwinism_2_bottle'],
       notes: [
-        "Brewed by distilling a Golden Carrot into a Potion of Darwinism I in a Brewing Stand.",
-        "Kinetic Sprint: Sprinting > 50 ticks applies Movement Speed III (Amplifier 2).",
-        "Kinetic Jump: Sneak + On Ground applies Jump Boost VI.",
-        "Ocular Sight: Ambient light level <= 3 applies Night Vision I.",
-        "Anti-Devolution Protocol: Rejects consumption of Tier I potions."
+        'Compatible with Potion, Splash Potion, Lingering Potion, and Tipped Arrows ("Arrow of Darwinism").',
+        'Blocked if Darwinism III is active ("§9Devolution refused.").',
+        'Lowers critical Night Vision threshold to raw light level <= 3 and increases Crisis Resistance/Regen to V/VI below 2 HP.'
       ]
     },
     {
-      id: "darwinism_3_bottle",
-      name: "Potion of Darwinism III",
-      category: "serum",
+      id: 'darwinism_3_bottle',
+      name: 'Potion of Darwinism (Tier III)',
+      category: 'serum',
       isUpdated: true,
-      desc: "Tier III Apex formulation of Darwin's Serum. Distilled from Darwinism II using an Enchanted Golden Apple. Integrates combat adrenaline scaling, threat blast shielding, step height enhancement, and genomic permanence.",
+      desc: 'Apex genetic serum granting +8 Max Health, +0.5 Oxygen Bonus, +0.6 Submerged Mining, +0.2 Knockback Resistance, Step Height 1.0, Speed IV with stamina sustain, Blast Shield proximity Resistance, and Adrenaline-driven Regeneration.',
       stats: [
-        { label: "Base Duration", value: "3:00 Minutes (or Permanent)" },
-        { label: "Max Health", value: "+8.0 (+4 Hearts)" },
-        { label: "Step Height", value: "1.0 Block" },
-        { label: "Oxygen Bonus", value: "+0.5" },
-        { label: "Submerged Mining Speed", value: "+0.6" },
-        { label: "Knockback Resistance", value: "+0.2" }
+        { label: 'Potion Registry ID', value: 'darwinism:darwinism_3_bottle' },
+        { label: 'Effect ID', value: 'darwinism:darwinism_3' },
+        { label: 'Duration', value: '5,000 ticks (4:10)' },
+        { label: 'Effect Amplifier', value: '2 (Level III)' },
+        { label: 'Brewing Base', value: 'Potion of Darwinism (Tier II)' },
+        { label: 'Brewing Agent', value: 'minecraft:enchanted_golden_apple' }
       ],
+      recipes: ['darwinism:darwinism_3_bottle'],
       notes: [
-        "Brewed by distilling an Enchanted Golden Apple into a Potion of Darwinism II in a Brewing Stand.",
-        "Dynamic Adrenaline: Damage intake adds +2 adrenaline (max 15), scaling Regeneration (Math.round(adrenaline / 3)) that decays at 0.05/tick.",
-        "Threat Blast Shield: Automatically grants Resistance IV/V when explosive entities are detected within a 6-block radius.",
-        "Genomic Permanence: Consuming 4–7 bottles permanently locks Darwinism III until cured by 7 Potions of Milk or player death."
+        'Compatible with Potion, Splash Potion, Lingering Potion, and Tipped Arrows ("Arrow of Darwinism").',
+        'Immediately clears active Darwinism I and II effects to avoid overlapping modifiers.',
+        'Schedules a 45-tick delayed biological shock: Poison I (40t) + Nausea I (80t).',
+        'Consuming 4 to 7 doses permanently alters your DNA, making Tier III infinite until death or curing with 7× Potions of Milk.'
       ]
     },
     {
-      id: "milk_bottle",
-      name: "Potion of Milk",
-      category: "utility",
+      id: 'milk_bottle',
+      name: 'Potion of Milk',
+      category: 'purifier',
       isUpdated: true,
-      desc: "Potion of Milk distilled from Darwinism I using a Fermented Spider Eye. Clears active mob effects and neutralizes permanent Darwinism DNA alterations upon repeated consumption.",
+      desc: 'A neutral neutralizing agent brewed directly from Darwinism I. Clears all active status effects immediately and contributes 1 dose toward the 7-bottle purification threshold required to cure permanent Darwinism III.',
       stats: [
-        { label: "Use Type", value: "Instant Consumable" },
-        { label: "Effect", value: "Clears All Active Status Effects" },
-        { label: "Permanent Cure Threshold", value: "7 Consumptions" },
-        { label: "Brewing Reagent", value: "Fermented Spider Eye + Darwinism I" }
+        { label: 'Potion Registry ID', value: 'darwinism:milk_bottle' },
+        { label: 'Effect ID', value: 'darwinism:milk_effect' },
+        { label: 'Duration', value: '60 ticks (0:03)' },
+        { label: 'Category & Flags', value: 'NEUTRAL • Ambient (No Particles)' },
+        { label: 'Brewing Base', value: 'Potion of Darwinism (Tier I)' },
+        { label: 'Brewing Agent', value: 'minecraft:fermented_spider_eye' }
       ],
+      recipes: ['darwinism:milk_bottle'],
       notes: [
-        "Brewed in a Brewing Stand by distilling a Fermented Spider Eye into a Potion of Darwinism I.",
-        "Consuming 7 bottles resets permanent DNA alteration (isDarwinismPermanent = false).",
-        "Also available in Splash Potion of Milk, Lingering Potion of Milk, and Arrow of Milk variants."
-      ]
-    },
-    {
-      id: "splash_darwinism",
-      name: "Splash Potion of Darwinism",
-      category: "serum",
-      isUpdated: true,
-      desc: "Splash formulation of Darwin's Serum. Thrown projectile that shatters on impact to apply the active serum effect to all entities within splash radius.",
-      stats: [
-        { label: "Delivery Method", value: "Thrown Area Splash" },
-        { label: "Brewing Reagent", value: "Gunpowder + Potion of Darwinism" },
-        { label: "Stack Size", value: "1 Bottle" }
-      ],
-      notes: [
-        "Brewed by combining a Potion of Darwinism with Gunpowder in a Brewing Stand.",
-        "Applies Darwin's Serum to target players or entities in the impact radius."
-      ]
-    },
-    {
-      id: "lingering_darwinism",
-      name: "Lingering Potion of Darwinism",
-      category: "serum",
-      isUpdated: true,
-      desc: "Lingering aerosol cloud containing Darwin's Serum. Creates a persistent effect cloud that applies serum effects to entities entering its radius.",
-      stats: [
-        { label: "Delivery Method", value: "Persistent Cloud" },
-        { label: "Brewing Reagent", value: "Dragon's Breath + Splash Darwinism" },
-        { label: "Crafting Use", value: "Used to craft Tipped Arrows of Darwinism" }
-      ],
-      notes: [
-        "Brewed by combining a Splash Potion of Darwinism with Dragon's Breath in a Brewing Stand.",
-        "Used as the center ingredient in the crafting recipe for Arrows of Darwinism."
-      ]
-    },
-    {
-      id: "arrow_darwinism",
-      name: "Arrow of Darwinism",
-      category: "projectiles",
-      isUpdated: true,
-      desc: "Tipped projectile arrow infused with Darwin's Serum. Delivers standard arrow projectile damage and applies Darwinism to the struck entity.",
-      stats: [
-        { label: "Crafting Yield", value: "8 Arrows per Lingering Potion" },
-        { label: "Stack Size", value: "64 Arrows" },
-        { label: "Recipe", value: "8 Arrows surrounding 1 Lingering Darwinism" }
-      ],
-      notes: [
-        "Crafted in a Crafting Table with 8 standard Arrows surrounding 1 Lingering Potion of Darwinism.",
-        "Applies Darwin's Serum to targets at range upon impact."
+        'Works across Potion, Splash Potion, Lingering Potion, and Arrow of Milk.',
+        'Calls entity.removeAllEffects() on activation.',
+        'If isDarwinismPermanent is true, increments milkDrunkCount; reaching 7 resets all permanence flags and strips Darwinism III.'
       ]
     }
   ];
 
-  const filteredItems = items.filter(item => {
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.desc.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+  const filteredItems = items.filter((item) => {
+    const matchesCat = selectedCategory === 'all' || item.category === selectedCategory;
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch =
+      !q ||
+      item.name.toLowerCase().includes(q) ||
+      item.id.toLowerCase().includes(q) ||
+      item.desc.toLowerCase().includes(q) ||
+      (item.notes?.some((n) => n.toLowerCase().includes(q)) ?? false);
+    return matchesCat && matchesSearch;
   });
 
-  const selectedItem = items.find(i => i.id === selectedItemId) || filteredItems[0] || items[0];
+  const activeItem = items.find((i) => i.id === selectedItemId) || filteredItems[0] || items[0];
 
   return (
-    <div className="space-y-8 py-2 select-text">
-      
-      {/* Search and Category Filters */}
-      <div className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Filter potions, reagents, or stats..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#0b101d] border border-[#1e293b] rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all"
-          />
-        </div>
+    <div className="space-y-8 max-w-[1000px] mx-auto text-ink-muted select-text">
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
-          {categories.map(cat => {
+      {/* Filter & Search Bar */}
+      <div className="p-4 bg-surface border border-line rounded-xl flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div className="flex flex-wrap gap-1.5">
+          {categories.map((cat) => {
             const Icon = cat.icon;
-            const isSelected = selectedCategory === cat.id;
+            const active = selectedCategory === cat.id;
             return (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-mono whitespace-nowrap transition-all ${
-                  isSelected 
-                    ? 'bg-sky-500 text-[#070a13] font-bold' 
-                    : 'bg-[#0b101d] text-slate-400 hover:text-slate-200 border border-[#1e293b]'
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  trackTelemetryClick({ page: 'items', target: cat.name, category: 'filter' });
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 border transition-colors cursor-pointer ${
+                  active
+                    ? 'bg-accent-soft text-accent-text border-accent-border font-semibold'
+                    : 'bg-surface-alt text-ink-muted border-line hover:text-ink'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -215,107 +156,102 @@ export default function ItemsView() {
             );
           })}
         </div>
+
+        <div className="relative min-w-[210px]">
+          <Search className="w-3.5 h-3.5 text-ink-subtle absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Filter potions..."
+            className="w-full bg-surface-alt border border-line rounded-lg py-1.5 pl-8.5 pr-3 text-xs text-ink placeholder:text-ink-subtle focus:outline-none focus:border-accent"
+          />
+        </div>
       </div>
 
-      {/* Main Content Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-        
-        {/* Left List */}
-        <div className="md:col-span-5 space-y-2">
-          {filteredItems.map(item => {
-            const isSelected = selectedItem?.id === item.id;
-            return (
-              <UpdatedFrame key={item.id} id={`item_item_${item.id}`} isUpdated={true}>
-                <div
-                  onClick={() => setSelectedItemId(item.id)}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                    isSelected 
-                      ? 'bg-[#0e192e] border-sky-400' 
-                      : 'bg-[#070a13] border-[#1e293b] hover:border-slate-600'
-                  }`}
-                >
-                  <div className="space-y-0.5">
-                    <h4 className={`font-serif text-sm font-bold ${isSelected ? 'text-sky-300' : 'text-slate-200'}`}>
-                      {item.name}
-                    </h4>
-                    <span className="text-[10px] font-mono text-slate-500 uppercase">
-                      {item.category}
-                    </span>
-                  </div>
-                  <div className="text-[11px] font-mono text-sky-400">
-                    Inspect &rarr;
-                  </div>
-                </div>
-              </UpdatedFrame>
-            );
-          })}
-
-          {filteredItems.length === 0 && (
-            <div className="p-8 text-center text-slate-500 font-mono text-xs border border-dashed border-[#1e293b] rounded-xl">
-              No potions or items match query.
-            </div>
-          )}
-        </div>
-
-        {/* Right Detail Pane */}
-        <div className="md:col-span-7">
-          {selectedItem && (
-            <div className="bg-[#0b101d] border border-[#1e293b] rounded-xl p-6 space-y-6 relative overflow-hidden">
-              <div className="space-y-2 border-b border-[#1e293b] pb-4">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#131c31] text-sky-300 border border-[#253655] uppercase">
-                    {selectedItem.category}
+      {/* Item Selector Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {filteredItems.map((item) => {
+          const isSelected = activeItem?.id === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                setSelectedItemId(item.id);
+                trackTelemetryClick({ page: 'items', target: item.name, category: 'item' });
+              }}
+              className={`text-left p-4 rounded-xl border transition-colors cursor-pointer space-y-1.5 ${
+                isSelected
+                  ? 'bg-accent-soft border-accent-border'
+                  : 'bg-surface border-line hover:border-accent/40 hover:bg-surface-alt'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-display font-semibold text-sm text-ink">{item.name}</span>
+                {item.isUpdated && (
+                  <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-surface border border-accent-border text-accent-text shrink-0">
+                    v1.4
                   </span>
-                  <span className="text-xs font-mono text-slate-500">ID: darwinism:{selectedItem.id}</span>
-                </div>
-                <h3 className="font-serif text-2xl font-bold text-slate-100">
-                  {selectedItem.name}
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                  {selectedItem.desc}
-                </p>
+                )}
               </div>
+              <div className="text-[11px] font-mono text-ink-subtle truncate">darwinism:{item.id}</div>
+            </button>
+          );
+        })}
+      </div>
 
-              {/* Stats Grid */}
-              {selectedItem.stats && selectedItem.stats.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-[10px] font-mono uppercase tracking-widest text-sky-400 font-bold">
-                    Technical Specifications
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
-                    {selectedItem.stats.map((s, idx) => (
-                      <div key={idx} className="p-2.5 bg-[#070a13] border border-[#1e293b] rounded-lg">
-                        <span className="text-slate-500 block text-[10px]">{s.label}</span>
-                        <span className="text-slate-200 font-semibold">{s.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Recipe View */}
-              <FancyRecipeView itemIds={[selectedItem.id]} title="Synthesis & Brewing Recipe" />
-
-              {/* Notes */}
-              {selectedItem.notes && selectedItem.notes.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-[10px] font-mono uppercase tracking-widest text-sky-400 font-bold">
-                    Procedure & Mechanics Notes
-                  </h4>
-                  <ul className="space-y-1.5 text-xs text-slate-400 font-mono">
-                    {selectedItem.notes.map((note, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <span className="text-sky-400 select-none">•</span>
-                        <span>{note}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+      {/* Active Item Detail Panel */}
+      {activeItem && (
+        <UpdatedFrame id={`dw_item_${activeItem.id}`} isUpdated={Boolean(activeItem.isUpdated)}>
+          <div className="p-6 bg-surface border border-line rounded-xl space-y-6">
+            <div className="border-b border-line pb-4 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-display text-2xl font-bold text-ink">{activeItem.name}</h2>
+                <span className="text-xs font-mono px-2.5 py-1 rounded bg-surface-alt border border-line text-accent-text">
+                  {activeItem.category === 'serum' ? 'Adaptive Serum' : 'Purification Brew'}
+                </span>
+              </div>
+              <p className="text-sm text-ink-muted leading-relaxed">{activeItem.desc}</p>
             </div>
-          )}
-        </div>
 
+            {activeItem.stats && activeItem.stats.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {activeItem.stats.map((stat) => (
+                  <div key={stat.label} className="p-3 bg-surface-alt border border-line rounded-lg">
+                    <div className="text-[10px] font-mono text-ink-subtle uppercase tracking-wider">{stat.label}</div>
+                    <div className="text-xs font-mono font-semibold text-ink mt-1 break-all">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeItem.recipes && activeItem.recipes.length > 0 && (
+              <FancyRecipeView itemIds={activeItem.recipes} title="Brewing Stand Recipe" />
+            )}
+
+            {activeItem.notes && activeItem.notes.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-line-soft">
+                <div className="text-xs font-mono uppercase tracking-wider text-ink-subtle font-semibold flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-accent-text" />
+                  <span>Implementation Notes</span>
+                </div>
+                <ul className="space-y-1.5 text-xs text-ink-muted list-disc list-inside font-mono">
+                  {activeItem.notes.map((note, idx) => (
+                    <li key={idx} className="leading-relaxed">{note}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </UpdatedFrame>
+      )}
+
+      {/* Brewing Tip */}
+      <div className="p-5 bg-surface border border-line rounded-xl flex items-start gap-3">
+        <Compass className="w-4 h-4 text-accent-text shrink-0 mt-0.5" />
+        <div className="text-xs text-ink-muted leading-relaxed">
+          <strong className="text-ink">Brewing Chain Tip:</strong> Every custom <code className="font-mono text-accent-text">IBrewingRecipe</code> checks for <code className="font-mono text-ink">Items.POTION</code>, <code className="font-mono text-ink">Items.SPLASH_POTION</code>, or <code className="font-mono text-ink">Items.LINGERING_POTION</code> and outputs the matching container type, so you can brew Splash or Lingering variants directly without re-converting after Tier I.
+        </div>
       </div>
 
     </div>

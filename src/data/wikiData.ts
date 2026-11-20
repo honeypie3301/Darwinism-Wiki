@@ -1,20 +1,12 @@
-/**
- * CONSTANT REMINDER 1: AVOID NARRATIVE TONES
- * All descriptions must be factual, technical, and encyclopedic. Do not use storytelling prose.
- *
- * CONSTANT REMINDER 2: WIKI MAINTENANCE NOTE IS FOR MOD UPDATES ONLY
- * In-game mod mechanics and updates only. Never document wiki website changes.
- */
 import { WikiArticle } from '../types';
 
 export const WIKI_ARTICLES: WikiArticle[] = [
   { slug: 'home', title: 'Home', category: 'Core Guide', filename: 'Home.tsx', order: 1 },
-  { slug: 'serum-overview', title: "Darwin's Serum Mechanics", category: 'Core Guide', filename: 'SerumOverview.tsx', order: 2 },
-  { slug: 'biological-adaptations', title: 'Biological Adaptations', category: 'Core Guide', filename: 'BiologicalAdaptations.tsx', order: 3 },
-  { slug: 'serum-tiers', title: 'Serum Tiers & Formulations', category: 'Serum & Science', filename: 'SerumTiers.tsx', order: 4 },
-  { slug: 'items', title: 'Potion & Item Registry', category: 'Serum & Science', filename: 'Items.tsx', order: 5 },
-  { slug: 'recipes', title: 'Brewing & Crafting Recipes', category: 'Serum & Science', filename: 'Recipes.tsx', order: 6 },
-  { slug: 'versions', title: 'Version History', category: 'Changelog', filename: 'Versions.tsx', order: 7 }
+  { slug: 'mechanics', title: 'Evolution Mechanics', category: 'Core Guide', filename: 'Mechanics.tsx', order: 2 },
+  { slug: 'versions', title: 'Version History', category: 'Core Guide', filename: 'Versions.tsx', order: 3 },
+  { slug: 'items', title: 'Potions & Brewing', category: 'Content & Data', filename: 'Items.tsx', order: 4 },
+  { slug: 'acquisition', title: 'Permanence & Cure', category: 'Content & Data', filename: 'Acquisition.tsx', order: 5 },
+  { slug: 'technical', title: 'Mod Specs & Compatibility', category: 'Technical', filename: 'Technical.tsx', order: 6 }
 ];
 
 export function getWikiArticles(): WikiArticle[] {
@@ -26,79 +18,57 @@ export function getArticleBySlug(slug: string): WikiArticle | undefined {
 }
 
 /**
- * Static full-text search database across all Darwinism articles for instantaneous,
- * offline deep search across serum effects, adaptations, brewing recipes, and items.
+ * Static full-text search database across all articles for instantaneous,
+ * offline, 100% independent deep search across effects, brewing recipes,
+ * adrenaline scaling, permanence, milk cure, and mod metadata.
  */
 export const WIKI_SEARCH_DATABASE: Record<string, string> = {
   home: `
-    Darwinism Minecraft Mod Field Guide
-    Darwin's Serum System Attributes Procedures
-    Kinetic Sprint Acceleration Movement Speed II III IV
-    Adrenaline Dynamic Regeneration Damage Scaling
-    Ocular Night Vision Light Threshold
-    Charge High Jump Crouching Sneak Ground
-    Threat Blast Shield Primed TNT Creeper Resistance
-    Powder Snow Freeze Clamping Immunity
-    Potion of Darwinism Tier I Tier II Tier III
-    Potion of Milk Genome Neutralizer DNA Alteration
-    Permanent DNA Mutation 4-7 bottles
-    Anti Devolution Protocol Devolution Refused
-    Tipped Arrows Splash Lingering
+    Darwinism Darwin's Serum Minecraft NeoForge 1.21.1 1.21.8 Forge 1.20.1 Mod Field Guide
+    Adaptive bio-serum Potion of Darwinism Tier I II III Potion of Milk
+    Night Vision Speed Jump Boost Adrenaline Regeneration Blast Resistance
+    Permanent DNA alteration Milk cure 7 bottles honeypie_3301 MCreator GPLv3 v1.4.1
   `,
-  'serum-overview': `
-    Darwin Serum Core Mechanics
-    Active Physiological Response Engine
-    Sprinting Acceleration Tick Counter > 50 60 ticks
-    Combat Adrenaline Dynamic Regeneration Math.round(adrenaline / 3)
-    Emergency Low Health Resistance IV Regeneration V
-    Ambient Raw Brightness <= 4 <= 3 Night Vision
-    Powder Snow Freeze Ticks Clamped Immunity
-    Threat Blast Shield TNT Creeper Minecart Resistance IV V
-    Step Height 1.0 Block Traversal
-    Static MobEffect Attributes Attack Damage Safe Fall Distance Burning Time
-  `,
-  'biological-adaptations': `
-    Biological Adaptations Triggers Thresholds
-    Locomotion Movement Speed II III IV Jump Boost IV VI VIII
-    Cellular Regeneration Adrenaline Scaling Emergency Overdrive
-    Ocular Night Vision Raw Brightness Detection
-    Threat Blast Shield Explosive Proximity Detection 6 blocks
-    Cryo Insulation Powder Snow Suppression
-    Step Height 1.0 Full Block Ascend
-    Genomic Permanence isDarwinismPermanent
-    Anti-Devolution Protocol Downgrade Rejection
-  `,
-  'serum-tiers': `
-    Serum Tier Formulations Brewing Recipes
-    Tier I Nautilus Shell Awkward Potion 3:00 minutes
-    Tier II Golden Carrot Potion of Darwinism I 3:00 minutes
-    Tier III Enchanted Golden Apple Potion of Darwinism II 3:00 minutes permanent
-    Potion of Milk Fermented Spider Eye Potion of Darwinism I
-    Static Modifiers Dynamic Scaling
-  `,
-  items: `
-    Potion of Darwinism I II III
-    Splash Potion of Darwinism I II III
-    Lingering Potion of Darwinism I II III
-    Arrow of Darwinism I II III
-    Potion of Milk Splash Lingering Arrow
-    Nautilus Shell Golden Carrot Enchanted Golden Apple Fermented Spider Eye
-  `,
-  recipes: `
-    Brewing Stand Crafting Table Recipes
-    Nautilus Shell Awkward Potion Darwinism 1
-    Golden Carrot Darwinism 1 Darwinism 2
-    Enchanted Golden Apple Darwinism 2 Darwinism 3
-    Fermented Spider Eye Darwinism 1 Milk Bottle
-    Gunpowder Splash Potion
-    Dragon's Breath Lingering Potion
-    Arrow Lingering Potion Tipped Arrow of Darwinism
+  mechanics: `
+    Evolution Mechanics DarwinismMobEffect Darwinism2MobEffect Darwinism3MobEffect
+    Attribute Modifiers ATTACK_KNOCKBACK ATTACK_DAMAGE BLOCK_BREAK_SPEED BURNING_TIME
+    SAFE_FALL_DISTANCE EXPLOSION_KNOCKBACK_RESISTANCE MAX_HEALTH OXYGEN_BONUS
+    SUBMERGED_MINING_SPEED KNOCKBACK_RESISTANCE STEP_HEIGHT
+    Night Vision Darkness Light Level <= 4 <= 3
+    Kinetic Sprint Speed II Speed III Speed IV sprintCounter 50 60 food exhaustion -0.05
+    Charge Jump Crouch Sneak On Ground Jump Boost IV VI VIII
+    Adrenaline DynamicRegenerationProcedure LivingIncomingDamageEvent adrenaline +2 cap 15 decay 0.05
+    Blast Shield Creeper PrimedTnt MinecartTNT 6 block radius Resistance IV V
+    Powder Snow freezing ticksFrozen
   `,
   versions: `
-    Version History Release Notes Changelog
-    NeoForge 1.21.8 1.21.1 1.20.1
-    Darwinism 1.4.1 1.3.1 1.3.0 1.2.0 1.1.0 1.0.0
-    Modrinth Downloads Direct Jar Download
-    Attribute migration permanent DNA alteration
+    Version History Changelog Updates Patch Notes Modrinth
+    Darwinism 1.4.1 NeoForge 1.21.8 1.21.1 static attribute modifiers fixed tier upgrade reset
+    Darwinism 1.4.0 Darwinism III AttributeResetProcedure devolution prevention
+    Darwinism 1.3.1 Forge 1.20.1 NeoForge 1.21.1 Adrenaline Evolution System
+    Darwinism 1.3.0 Potion of Darwinism II 1.2.0 1.1.0 1.0.0
+  `,
+  items: `
+    Potions Brewing Splash Lingering Tipped Arrow Arrow of Darwinism Arrow of Milk
+    darwinism:darwinism_1_bottle Awkward Potion Nautilus Shell 3600 ticks
+    darwinism:darwinism_2_bottle Golden Carrot 4000 ticks
+    darwinism:darwinism_3_bottle Enchanted Golden Apple 5000 ticks
+    darwinism:milk_bottle Fermented Spider Eye 60 ticks
+  `,
+  acquisition: `
+    Permanence Cure DNA Alteration Anti-Devolution
+    Devolution refused DarwinismEffectStartedappliedProcedure Darwinism2EffectStartedappliedProcedure
+    Your DNA has permanently altered darwinismTarget 4 to 7 doses darwinismDrunkCount
+    Poison 40 ticks Confusion Nausea 80 ticks delay 45 ticks queueServerWork
+    EnforceDarwinismPermanenceProcedure every 20 ticks infinite DARWINISM_3
+    MilkEffectEffectStartedappliedProcedure milkDrunkCount >= 7 cure permanent Darwinism
+    ResetDarwinismOnDeathProcedure PlayerRespawnEvent clonePlayer PlayerVariables
+  `,
+  technical: `
+    Technical Mod Specs Compatibility neoforge.mods.toml pack.mcmeta
+    modId darwinism version 1.4.1 NeoForge 21.1.232 Minecraft 1.21.1 pack_format 48
+    DarwinismModVariables PlayerVariables ATTACHMENT_TYPES player_variables_sync
+    sprintCounter adrenaline darwinismDrunkCount isDarwinismPermanent darwinismTarget milkDrunkCount
+    GNU General Public License v3 GPL-3.0-or-later MCreator honeypie_3301
   `
 };

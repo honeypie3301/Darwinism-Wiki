@@ -11,4 +11,3 @@ export type WikiArticle = ManifestItem;
 export interface Article extends ManifestItem {
   content: string;
 }
-

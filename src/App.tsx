@@ -1,16 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useDeferredValue, useCallback } from 'react';
 import { HashRouter, Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Menu, Search, X, BookOpen, AlertCircle, HelpCircle, FileText, FileSearch } from 'lucide-react';
-import { doc, getDoc, setDoc, addDoc, collection, increment, serverTimestamp } from 'firebase/firestore';
-import { db as firestoreDb, hasConfig } from './lib/firebase';
 import { WikiArticle } from './types';
 import { WIKI_ARTICLES, WIKI_SEARCH_DATABASE } from './data/wikiData';
 import Sidebar from './components/Sidebar';
 import ArticleView from './components/ArticleView';
-import StatsModal from './components/StatsModal';
-import DarwinismIcon from './components/DarwinismIcon';
+import { detectClientEnvironment } from './utils/deviceInfo';
+import { trackTelemetryClick, trackHoneyProbe } from './utils/telemetry';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import ThemeToggle from './components/ThemeToggle';
+import StarlightBackground from './components/special/StarlightBackground';
+import LiveCursorsOverlay from './components/special/LiveCursorsOverlay';
+import { usePageOccupancy } from './utils/cursorSync';
+import {
+  hasPersistedTelemetryUnlockHint,
+  getPersistedAdminToken,
+  validatePersistedAdminToken,
+  isAuthorizedFirebaseUser,
+  persistTelemetryHint,
+  subscribeTelemetryTokenChanges,
+  clearPersistedAdminToken,
+} from './utils/telemetryAuth';
+
+const StatsModal = React.lazy(() => import('./components/StatsModal'));
 
 function WikiContainer() {
+  const { theme } = useTheme();
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -20,8 +35,97 @@ function WikiContainer() {
   const [loading] = useState(false);
   const [error] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [isTerminalAuthorized, setIsTerminalAuthorized] = useState(false);
+  const [isTelemetryUnlocked, setIsTelemetryUnlocked] = useState<boolean>(() =>
+    hasPersistedTelemetryUnlockHint()
+  );
+  const isTerminalAuthorizedRef = React.useRef(false);
+  const pageOccupancy = usePageOccupancy(isTelemetryUnlocked);
+
+  useEffect(() => {
+    let cancelled = false;
+    let firebaseReady = false;
+    let firebaseAuthed = false;
+    let tokenReady = false;
+    let tokenAuthed = false;
+    let unsubscribeFirebase: (() => void) | null = null;
+
+    const recomputeUnlock = () => {
+      if (cancelled) return;
+      if (firebaseAuthed || tokenAuthed) {
+        persistTelemetryHint(true);
+        setIsTelemetryUnlocked(true);
+      } else if (firebaseReady && tokenReady) {
+        persistTelemetryHint(false);
+        setIsTelemetryUnlocked(false);
+      }
+    };
+
+    const runTokenCheck = async (tok: string | null) => {
+      tokenReady = false;
+      if (!tok) {
+        tokenAuthed = false;
+        tokenReady = true;
+        recomputeUnlock();
+        return;
+      }
+      const { valid, definitive } = await validatePersistedAdminToken(tok);
+      if (cancelled) return;
+      if (valid) {
+        tokenAuthed = true;
+      } else if (definitive) {
+        clearPersistedAdminToken();
+        tokenAuthed = false;
+      } else {
+        tokenAuthed = true;
+      }
+      tokenReady = true;
+      recomputeUnlock();
+    };
+
+    void runTokenCheck(getPersistedAdminToken());
+    const unsubToken = subscribeTelemetryTokenChanges((tok) => {
+      void runTokenCheck(tok);
+    });
+
+    void (async () => {
+      try {
+        const [{ onAuthStateChanged }, { auth }] = await Promise.all([
+          import('firebase/auth'),
+          import('./lib/firebase'),
+        ]);
+        if (cancelled) return;
+        unsubscribeFirebase = onAuthStateChanged(auth, (user) => {
+          firebaseReady = true;
+          firebaseAuthed = isAuthorizedFirebaseUser(user);
+          recomputeUnlock();
+        });
+      } catch {
+        firebaseReady = true;
+        firebaseAuthed = false;
+        recomputeUnlock();
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      unsubToken();
+      unsubscribeFirebase?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    isTerminalAuthorizedRef.current = statsOpen && isTerminalAuthorized;
+  }, [statsOpen, isTerminalAuthorized]);
+
+  const handleCloseSidebar = useCallback(() => setMobileSidebarOpen(false), []);
+  const handleOpenStats = useCallback(() => setStatsOpen(true), []);
+  const handleNavigateSlug = useCallback((targetSlug: string) => {
+    navigate(`/wiki/${targetSlug}`);
+  }, [navigate]);
 
   // Sync hash section parameter
   useEffect(() => {
@@ -40,53 +144,13 @@ function WikiContainer() {
 
   // Determine active article
   const activeSlug = slug || 'home';
-  const activeArticle = articles.find(a => a.slug === activeSlug) || (
-    activeSlug === 'rot-lab' ? {
-      title: 'Rot Neural Lab & Mindspace Architecture',
-      slug: 'rot-lab',
-      category: 'Special',
-      filename: 'RotLab.tsx',
-      order: 999
-    } : undefined
-  );
+  const activeArticle = articles.find(a => a.slug === activeSlug);
   const activeContent = articlesContent[activeSlug] || '';
-
-  // Set tab title & browser tab favicon dynamically
-  useEffect(() => {
-    if (activeArticle) {
-      document.title = `${activeArticle.title} - Darwinism Wiki`;
-    } else {
-      document.title = 'Darwinism Wiki';
-    }
-
-    try {
-      const img = new Image();
-      const svgUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='bgGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230b1329'/%3E%3Cstop offset='50%25' stop-color='%23070a13'/%3E%3Cstop offset='100%25' stop-color='%2303050a'/%3E%3C/linearGradient%3E%3ClinearGradient id='dnaGrad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2338bdf8'/%3E%3Cstop offset='100%25' stop-color='%230284c7'/%3E%3C/linearGradient%3E%3ClinearGradient id='dnaGrad2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2322d3ee'/%3E%3Cstop offset='100%25' stop-color='%230891b2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='16' y='16' width='480' height='480' rx='96' fill='url(%23bgGrad)' stroke='%23253655' stroke-width='12'/%3E%3Crect x='32' y='32' width='448' height='448' rx='80' fill='none' stroke='%2338bdf8' stroke-width='6' stroke-opacity='0.5'/%3E%3Cg%3E%3Cpath d='M 160 110 C 310 180, 310 330, 160 402' fill='none' stroke='url(%23dnaGrad1)' stroke-width='36' stroke-linecap='round'/%3E%3Cpath d='M 352 110 C 202 180, 202 330, 352 402' fill='none' stroke='url(%23dnaGrad2)' stroke-width='36' stroke-linecap='round'/%3E%3Cline x1='195' y1='155' x2='317' y2='155' stroke='%2338bdf8' stroke-width='18' stroke-linecap='round' opacity='0.9'/%3E%3Cline x1='232' y1='215' x2='280' y2='215' stroke='%2322d3ee' stroke-width='18' stroke-linecap='round' opacity='0.9'/%3E%3Cline x1='232' y1='297' x2='280' y2='297' stroke='%2322d3ee' stroke-width='18' stroke-linecap='round' opacity='0.9'/%3E%3Cline x1='195' y1='357' x2='317' y2='357' stroke='%2338bdf8' stroke-width='18' stroke-linecap='round' opacity='0.9'/%3E%3Ccircle cx='160' cy='110' r='26' fill='%237dd3fc'/%3E%3Ccircle cx='352' cy='110' r='26' fill='%2338bdf8'/%3E%3Ccircle cx='256' cy='256' r='32' fill='%23e0f2fe'/%3E%3Ccircle cx='160' cy='402' r='26' fill='%2338bdf8'/%3E%3Ccircle cx='352' cy='402' r='26' fill='%237dd3fc'/%3E%3C/g%3E%3C/svg%3E";
-      
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 64;
-        canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, 64, 64);
-          const iconLink = document.querySelector<HTMLLinkElement>("link[rel='icon']") || document.createElement('link');
-          iconLink.type = 'image/png';
-          iconLink.rel = 'icon';
-          iconLink.href = canvas.toDataURL('image/png');
-          if (!iconLink.parentNode) {
-            document.head.appendChild(iconLink);
-          }
-        }
-      };
-      img.src = svgUrl;
-    } catch (e) {
-      // Fallback
-    }
-  }, [activeArticle]);
 
   // Track page visits
   useEffect(() => {
+    const clientEnv = detectClientEnvironment();
+
     const recordLocalVisit = (slug: string, visitorId: string) => {
       const localStatsStr = localStorage.getItem('local_wiki_stats');
       let stats = {
@@ -99,9 +163,9 @@ function WikiContainer() {
             timestamp: new Date().toISOString(),
             type: 'unique' as 'unique' | 'repeat',
             slug: slug,
-            title: activeArticle ? activeArticle.title : slug,
-            wiki: 'darwinism',
-            visitorId: visitorId.substring(0, 12)
+            visitorId: visitorId.substring(0, 12),
+            os: clientEnv.os,
+            browser: clientEnv.browser
           }
         ]
       };
@@ -128,9 +192,9 @@ function WikiContainer() {
             timestamp: new Date().toISOString(),
             type: (isUnique ? 'unique' : 'repeat') as 'unique' | 'repeat',
             slug: slug,
-            title: activeArticle ? activeArticle.title : slug,
-            wiki: 'darwinism',
-            visitorId: visitorId.substring(0, 12)
+            visitorId: visitorId.substring(0, 12),
+            os: clientEnv.os,
+            browser: clientEnv.browser
           });
 
           if (stats.logs.length > 50) {
@@ -145,10 +209,13 @@ function WikiContainer() {
     };
 
     const recordVisitFirebase = async (slug: string, visitorId: string): Promise<boolean> => {
-      if (!hasConfig) {
-        return false;
-      }
       try {
+        const { hasConfig, db: firestoreDb } = await import('./lib/firebase');
+        if (!hasConfig || !firestoreDb) {
+          return false;
+        }
+        const { doc, getDoc, setDoc, addDoc, collection, increment, serverTimestamp } = await import('firebase/firestore');
+
         const visitorDocRef = doc(firestoreDb, 'visitors', visitorId);
         const isKnownLocally = localStorage.getItem('wiki_visitor_established') === 'true';
         let isUnique = false;
@@ -162,10 +229,16 @@ function WikiContainer() {
         const visitorWrite = isUnique
           ? setDoc(visitorDocRef, {
               firstVisit: serverTimestamp(),
-              lastVisit: serverTimestamp()
+              lastVisit: serverTimestamp(),
+              os: clientEnv.os,
+              browser: clientEnv.browser,
+              deviceType: clientEnv.deviceType
             })
           : setDoc(visitorDocRef, {
-              lastVisit: serverTimestamp()
+              lastVisit: serverTimestamp(),
+              os: clientEnv.os,
+              browser: clientEnv.browser,
+              deviceType: clientEnv.deviceType
             }, { merge: true });
 
         const statsDocRef = doc(firestoreDb, 'stats', 'global');
@@ -173,9 +246,6 @@ function WikiContainer() {
           totalCount: increment(1),
           uniqueCount: isUnique ? increment(1) : increment(0),
           repeatCount: !isUnique ? increment(1) : increment(0),
-          pageViews: {
-            [slug]: increment(1)
-          },
           [`pageViews.${slug}`]: increment(1)
         }, { merge: true });
 
@@ -183,22 +253,28 @@ function WikiContainer() {
           timestamp: serverTimestamp(),
           type: isUnique ? 'unique' : 'repeat',
           slug,
-          title: activeArticle ? activeArticle.title : slug,
-          wiki: 'darwinism',
-          visitorId: visitorId.substring(0, 12)
+          visitorId: visitorId.substring(0, 12),
+          os: clientEnv.os,
+          browser: clientEnv.browser
         });
 
-        await Promise.all([visitorWrite, statsWrite, logWrite]);
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Firebase network timeout')), 3500)
+        );
+
+        await Promise.race([
+          Promise.all([visitorWrite, statsWrite, logWrite]),
+          timeoutPromise
+        ]);
         return true;
       } catch (err) {
-        console.warn('Firebase registration failed, falling back to local simulation.', err);
         return false;
       }
     };
 
     const recordVisit = async () => {
       try {
-        // Check if current device opted out of telemetry
+        // Check if current device is opted out / ignored from telemetry
         if (localStorage.getItem('wiki_telemetry_ignore_device') === 'true') {
           return;
         }
@@ -227,11 +303,211 @@ function WikiContainer() {
     }
   }, [activeSlug, loading, error]);
 
+  // Universal Global Click Interaction Telemetry Tracker (zero page hardcoding needed)
+  useEffect(() => {
+    const buildSelectorSummary = (el: HTMLElement) => {
+      const idPart = el.id ? `#${el.id}` : '';
+      const clsPart = typeof el.className === 'string' && el.className.trim()
+        ? `.${el.className.trim().split(/\s+/).slice(0, 2).join('.')}`
+        : '';
+      return `${el.tagName.toLowerCase()}${idPart}${clsPart}`;
+    };
+
+    const radiansProbeRegex = /\b(radians?|live[-_ ]?radians?|02:\s*live\s*radians?|angular[-_ ]?speed|radial[-_ ]?speed)\b/i;
+    const adminProbeRegex = /\b(admin(?:istrator|panel|override|bypass|console|controls?)?|sysadmin|superuser|root[-_ ]?panel|debug[-_ ]?panel|clearance[-_ ]?bypass|override[-_ ]?auth|telemetry[-_ ]?(?:admin|override|bypass))\b/i;
+    const adminHrefRegex = /^#?\/?(?:admin|radians|telemetry|debug|sysadmin)(?:\/|$|\?)/i;
+
+    const handleGlobalClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+
+      // 0. Honeypot & unauthorized probe detection (runs even if telemetry opt-out is set)
+      const honeyTarget = target.closest<HTMLElement>('[data-honey-probe]');
+      if (honeyTarget) {
+        const reason = honeyTarget.getAttribute('data-honey-probe') || 'hidden_radians_probe';
+        const label = (
+          honeyTarget.getAttribute('aria-label') ||
+          honeyTarget.getAttribute('title') ||
+          honeyTarget.textContent ||
+          honeyTarget.id ||
+          'honeypot'
+        ).replace(/\s+/g, ' ').trim();
+        trackHoneyProbe({
+          page: activeSlug,
+          reason,
+          target: label,
+          selector: buildSelectorSummary(honeyTarget)
+        });
+        return;
+      }
+
+      if (!isTerminalAuthorizedRef.current) {
+        const probeEl = target.closest<HTMLElement>(
+          'button, a, [role="button"], [role="tab"], input, select, summary, [data-tab], [data-admin], [data-admin-action], [data-radians], [data-radians-control]'
+        ) || target;
+
+        const hrefAttr = (probeEl.getAttribute('href') || target.closest('a[href]')?.getAttribute('href') || '').trim();
+        const attrMeta = [
+          probeEl.id,
+          typeof probeEl.className === 'string' ? probeEl.className : '',
+          probeEl.getAttribute('name') || '',
+          probeEl.getAttribute('aria-label') || '',
+          probeEl.getAttribute('title') || '',
+          probeEl.getAttribute('data-tab') || '',
+          probeEl.getAttribute('data-admin') || '',
+          probeEl.getAttribute('data-admin-action') || '',
+          probeEl.getAttribute('data-radians') || '',
+          hrefAttr
+        ].join(' ');
+        const rawText = (probeEl.textContent || '').replace(/\s+/g, ' ').trim();
+        const shortText = rawText.length <= 80 ? rawText : '';
+        const combinedSignal = `${attrMeta} ${shortText}`;
+
+        const isInteractiveNode = Boolean(
+          target.closest('button, a, [role="button"], [role="tab"], input, select, summary, [data-tab], [data-admin], [data-admin-action], [data-radians], [data-radians-control]')
+        );
+        const isHiddenInteractive =
+          isInteractiveNode &&
+          (probeEl.hasAttribute('hidden') ||
+            Boolean(probeEl.closest('[hidden]')) ||
+            window.getComputedStyle(probeEl).display === 'none' ||
+            window.getComputedStyle(probeEl).visibility === 'hidden');
+
+        if (radiansProbeRegex.test(combinedSignal) || /^#?\/?radians\b/i.test(hrefAttr)) {
+          trackHoneyProbe({
+            page: activeSlug,
+            reason: 'hidden_radians_probe',
+            target: shortText || probeEl.id || attrMeta.trim() || 'radians_element',
+            selector: buildSelectorSummary(probeEl),
+            href: hrefAttr || undefined
+          });
+          return;
+        }
+
+        if (adminProbeRegex.test(combinedSignal) || adminHrefRegex.test(hrefAttr)) {
+          trackHoneyProbe({
+            page: activeSlug,
+            reason: 'nonexistent_admin_probe',
+            target: shortText || hrefAttr || probeEl.id || 'admin_element',
+            selector: buildSelectorSummary(probeEl),
+            href: hrefAttr || undefined
+          });
+          return;
+        }
+
+        if (isHiddenInteractive) {
+          trackHoneyProbe({
+            page: activeSlug,
+            reason: 'nonexistent_admin_probe',
+            target: shortText || probeEl.id || 'hidden_interactive_element',
+            selector: buildSelectorSummary(probeEl),
+            href: hrefAttr || undefined
+          });
+          return;
+        }
+
+        if (target.closest('#stats-modal-container')) {
+          const modalInteractive = target.closest<HTMLElement>('button, a, [role="button"], [role="tab"], input');
+          if (modalInteractive && !modalInteractive.closest('[data-lock-control="true"]')) {
+            trackHoneyProbe({
+              page: activeSlug,
+              reason: 'unauthorized_terminal_tamper',
+              target: (modalInteractive.textContent || modalInteractive.id || 'injected_terminal_control').replace(/\s+/g, ' ').trim(),
+              selector: buildSelectorSummary(modalInteractive)
+            });
+            return;
+          }
+        }
+      }
+
+      if (typeof window !== 'undefined' && localStorage.getItem('wiki_telemetry_ignore_device') === 'true') {
+        return;
+      }
+
+      // Do not log clicks inside the telemetry terminal window or its launcher
+      if (
+        target.closest('#stats-modal-container') || 
+        target.closest('#stats-modal-backdrop') || 
+        target.closest('#stats-button')
+      ) {
+        return;
+      }
+
+      // 1. Explicit telemetry metadata on cards or custom elements if present
+      const explicitItem = target.closest<HTMLElement>('[data-telemetry-item], [data-telemetry-target], [data-telemetry]');
+      if (explicitItem) {
+        const itemVal = explicitItem.getAttribute('data-telemetry-item') || 
+                        explicitItem.getAttribute('data-telemetry-target') || 
+                        explicitItem.getAttribute('data-telemetry');
+        if (itemVal && itemVal.trim()) {
+          trackTelemetryClick({ page: activeSlug, target: itemVal.trim(), category: 'item' });
+          return;
+        }
+      }
+
+      // 2. Navigation links (anchor tags e.g. #/wiki/...)
+      const link = target.closest<HTMLAnchorElement>('a[href]');
+      if (link) {
+        const href = link.getAttribute('href') || '';
+        let targetName = link.textContent || link.getAttribute('aria-label') || link.getAttribute('title') || '';
+        targetName = targetName.split('\n')[0].replace(/\s+/g, ' ').trim();
+
+        if (href.startsWith('#/wiki/') || href.startsWith('/wiki/')) {
+          const targetSlug = href.replace(/^#?\/?wiki\//, '').split('/')[0].split('?')[0];
+          const matchedArticle = articles.find(a => a.slug === targetSlug);
+          const cleanLabel = targetName || (matchedArticle ? matchedArticle.title : targetSlug);
+          trackTelemetryClick({
+            page: activeSlug,
+            target: cleanLabel.slice(0, 40),
+            category: 'navigation'
+          });
+          return;
+        }
+
+        if (targetName && targetName.length >= 2) {
+          trackTelemetryClick({
+            page: activeSlug,
+            target: targetName.slice(0, 40),
+            category: 'link'
+          });
+          return;
+        }
+      }
+
+      // 3. Interactive buttons, tabs, accordions, details/summary, or elements with role="button"
+      const button = target.closest<HTMLElement>('button, [role="button"], summary, [role="tab"], .cursor-pointer');
+      if (button) {
+        // Find best title candidate: headings inside button, strong tags, or primary line of text
+        const headingEl = button.querySelector('h1, h2, h3, h4, h5, h6, strong, span.font-serif, span.font-semibold');
+        const rawText = headingEl 
+          ? (headingEl.textContent || '') 
+          : (button.getAttribute('aria-label') || button.getAttribute('title') || button.textContent || '');
+        
+        // Take the first non-empty meaningful line
+        const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length >= 2);
+        const cleanBtnText = lines[0] ? lines[0].replace(/\s+/g, ' ').trim() : '';
+
+        // Ignore generic utility icons or excessively long paragraphs
+        if (cleanBtnText.length >= 2 && cleanBtnText.length <= 48) {
+          trackTelemetryClick({
+            page: activeSlug,
+            target: cleanBtnText,
+            category: 'button'
+          });
+          return;
+        }
+      }
+    };
+
+    window.addEventListener('click', handleGlobalClick, { capture: true });
+    return () => window.removeEventListener('click', handleGlobalClick, { capture: true });
+  }, [activeSlug, articles]);
+
   // 2. Perform deep-content relevance search
   const searchResults = React.useMemo(() => {
-    if (!searchQuery.trim()) return [];
+    if (!deferredSearchQuery.trim()) return [];
 
-    const query = searchQuery.toLowerCase().trim();
+    const query = deferredSearchQuery.toLowerCase().trim();
     const results: Array<{
       article: WikiArticle;
       score: number;
@@ -292,23 +568,23 @@ function WikiContainer() {
 
     // Sort by relevance score descending
     return results.sort((a, b) => b.score - a.score);
-  }, [searchQuery, articles, articlesContent]);
+  }, [deferredSearchQuery, articles, articlesContent]);
 
   // Filter sidebar articles based on search query
   const filteredArticles = React.useMemo(() => {
-    if (!searchQuery.trim()) return articles;
+    if (!deferredSearchQuery.trim()) return articles;
     return searchResults.map(r => r.article);
-  }, [searchQuery, articles, searchResults]);
+  }, [deferredSearchQuery, articles, searchResults]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#080a08] flex flex-col items-center justify-center font-sans">
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center font-sans">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded bg-[#1b221c] border border-[#2b372d] flex items-center justify-center text-[#709978] font-serif font-bold text-2xl">
-            B
+          <div className="w-12 h-12 rounded-xl bg-surface border border-line flex items-center justify-center text-accent-text font-display font-bold text-2xl">
+            D
           </div>
-          <div className="text-xs font-mono text-[#5a6b5e] uppercase tracking-[0.3em]">
-            Accessing Survival Index...
+          <div className="text-xs font-mono text-ink-subtle uppercase tracking-[0.3em]">
+            Accessing Mod Archive...
           </div>
         </div>
       </div>
@@ -317,14 +593,14 @@ function WikiContainer() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#080a08] flex flex-col items-center justify-center p-6 text-center font-sans">
-        <div className="max-w-md p-6 bg-[#0f1210] border border-[#232d25] rounded-lg">
-          <AlertCircle className="w-10 h-10 text-emerald-500 mx-auto mb-4" />
-          <h2 className="font-serif text-lg text-[#e0e7e0] font-semibold mb-2">Failed to load Wiki</h2>
-          <p className="text-xs text-[#829285] leading-relaxed mb-6 font-mono">{error}</p>
-          <button 
+      <div className="min-h-screen bg-canvas flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="max-w-md p-6 bg-surface border border-line rounded-xl">
+          <AlertCircle className="w-10 h-10 text-accent-text mx-auto mb-4" />
+          <h2 className="font-display text-lg text-ink font-semibold mb-2">Failed to load Wiki</h2>
+          <p className="text-xs text-ink-muted leading-relaxed mb-6 font-mono">{error}</p>
+          <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-[#182119] hover:bg-[#212f23] text-[#a9d1b0] border border-[#2e3e31] text-xs font-mono rounded transition-all cursor-pointer"
+            className="px-4 py-2 bg-cta hover:bg-cta-hover text-cta-ink text-xs font-mono rounded-lg transition-colors cursor-pointer"
           >
             Retry Connection
           </button>
@@ -334,8 +610,7 @@ function WikiContainer() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080a08] text-[#c9d1c9] font-sans flex">
-      
+    <div className={`min-h-screen ${theme === 'starlight' ? 'bg-transparent' : 'bg-canvas'} text-ink font-sans flex relative transition-colors duration-200`}>
       {/* Sidebar - fully dynamic and searchable */}
       <Sidebar
         articles={filteredArticles}
@@ -343,32 +618,38 @@ function WikiContainer() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         isOpen={mobileSidebarOpen}
-        onClose={() => setMobileSidebarOpen(false)}
-        onBIconClick={() => setStatsOpen(true)}
+        onClose={handleCloseSidebar}
+        onBIconClick={handleOpenStats}
+        pageOccupancy={isTelemetryUnlocked ? pageOccupancy : undefined}
       />
 
       {/* Main Container */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        
+      <div className="flex-1 min-w-0 flex flex-col relative z-10">
+
         {/* Mobile Header Navbar */}
-        <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-[#0c0f0d]/90 backdrop-blur border-b border-[#1a221c]">
+        <header className="md:hidden sticky top-0 z-30 flex items-center justify-between px-3.5 py-2.5 bg-surface/95 backdrop-blur border-b border-line">
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="p-1.5 rounded text-[#829285] hover:text-[#e0e7e0] hover:bg-[#111712] transition-colors"
+            className="p-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-alt transition-colors cursor-pointer"
+            aria-label="Open navigation menu"
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="font-serif font-bold text-sm text-[#e0e7e0] tracking-wide uppercase">
-            {activeArticle ? activeArticle.title : 'Survival Index'}
+          <span className="font-display font-bold text-xs sm:text-sm text-ink tracking-tight truncate mx-1.5">
+            {activeArticle ? activeArticle.title : 'Darwinism Wiki'}
           </span>
-          <button 
-            onClick={() => setStatsOpen(true)}
-            className="w-8 h-8 rounded-lg bg-[#131c31] border border-[#253655] flex items-center justify-center p-1 hover:bg-[#1d2d47] transition-colors cursor-pointer"
-            title="View Terminal Stats"
-            id="header-b-icon"
-          >
-            <DarwinismIcon className="w-full h-full" />
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <ThemeToggle size="sm" />
+            <button
+              onClick={() => setStatsOpen(true)}
+              className="w-8 h-8 rounded-lg bg-surface-alt border border-line flex items-center justify-center text-accent-text font-display font-bold text-sm hover:border-accent/60 hover:bg-accent-soft transition-colors cursor-pointer"
+              title="View Terminal Stats"
+              aria-label="View Terminal Stats"
+              id="header-b-icon"
+            >
+              D
+            </button>
+          </div>
         </header>
 
         {/* Dynamic Article Page or Global Deep-Search Results View */}
@@ -376,49 +657,49 @@ function WikiContainer() {
           {searchQuery.trim() ? (
             /* Show comprehensive search catalog results screen */
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
-              <div className="border-b border-[#1a221c] pb-6 mb-8 select-none">
-                <div className="flex items-center gap-2 text-xs font-mono text-[#709978] uppercase tracking-wider mb-2">
+              <div className="border-b border-line pb-6 mb-8 select-none">
+                <div className="flex items-center gap-2 text-xs font-mono text-accent-text uppercase tracking-wider mb-2">
                   <FileSearch className="w-4 h-4" />
                   <span>Interactive Catalog Search</span>
                 </div>
-                <h1 className="font-serif text-3xl font-bold text-[#e0e7e0]">
-                  Search results for "{searchQuery}"
+                <h1 className="font-display text-3xl font-bold text-ink">
+                  Search results for &ldquo;{searchQuery}&rdquo;
                 </h1>
-                <p className="text-xs text-[#5a6b5e] mt-1">
+                <p className="text-xs text-ink-muted mt-1">
                   Found {searchResults.length} relevant entries in deep page contents.
                 </p>
               </div>
 
               {searchResults.length > 0 ? (
-                <div className="space-y-6">
-                  {searchResults.map(({ article, score, snippet }) => (
-                    <div 
+                <div className="space-y-4">
+                  {searchResults.map(({ article, snippet }) => (
+                    <div
                       key={article.slug}
                       onClick={() => {
                         setSearchQuery('');
                         navigate(`/wiki/${article.slug}`);
                       }}
-                      className="p-5 bg-[#0f1210] hover:bg-[#131914] border border-[#1a221c] hover:border-[#2a362d] rounded-lg transition-all cursor-pointer group"
+                      className="p-5 bg-surface hover:bg-surface-alt border border-line hover:border-accent/50 rounded-xl transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center justify-between gap-4 mb-2">
-                        <h3 className="font-serif text-lg text-[#a9d1b0] group-hover:text-[#c5e6cc] font-semibold transition-colors">
+                        <h3 className="font-display text-lg text-ink group-hover:text-accent-text font-semibold transition-colors">
                           {article.title}
                         </h3>
-                        <span className="text-[10px] font-mono bg-[#161d18] text-[#5a6b5e] border border-[#232d25] px-2 py-0.5 rounded uppercase">
+                        <span className="text-xs font-mono text-ink-subtle shrink-0">
                           {article.category}
                         </span>
                       </div>
-                      <p className="text-xs text-[#829285] font-mono leading-relaxed bg-[#0a0d0b] p-3 rounded border border-[#151b17] select-none">
+                      <p className="text-xs text-ink-muted font-mono leading-relaxed bg-surface-alt p-3 rounded-lg border border-line-soft select-none">
                         {snippet}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16 bg-[#0f1210] border border-[#1a221c] rounded-lg select-none">
-                  <HelpCircle className="w-12 h-12 text-[#334237] mx-auto mb-4" />
-                  <p className="text-sm font-serif italic text-[#829285]">No documentation matches your query.</p>
-                  <p className="text-xs text-[#5a6b5e] mt-2 font-mono">Try searching for simple words like "sanity", "splinter", or "dimensions".</p>
+                <div className="text-center py-16 bg-surface border border-line rounded-xl select-none">
+                  <HelpCircle className="w-12 h-12 text-ink-subtle mx-auto mb-4" />
+                  <p className="text-sm font-display italic text-ink-muted">No documentation matches your query.</p>
+                  <p className="text-xs text-ink-subtle mt-2 font-mono">Try searching for simple words like &ldquo;darwinism&rdquo;, &ldquo;adrenaline&rdquo;, or &ldquo;milk&rdquo;.</p>
                 </div>
               )}
             </div>
@@ -433,31 +714,69 @@ function WikiContainer() {
           ) : (
             /* Fallback to index redirects */
             <div className="flex flex-col items-center justify-center h-[60vh] select-none">
-              <AlertCircle className="w-8 h-8 text-[#5a6b5e] mb-3" />
-              <p className="text-sm font-serif italic text-[#829285]">Article not found.</p>
-              <a href="#/wiki/home" className="text-xs text-[#709978] hover:underline mt-2 font-mono">Return Home</a>
+              <AlertCircle className="w-8 h-8 text-ink-subtle mb-3" />
+              <p className="text-sm font-display italic text-ink-muted">Article not found.</p>
+              <a href="#/wiki/home" className="text-xs text-accent-text hover:underline underline-offset-4 mt-2 font-mono">Return Home</a>
             </div>
           )}
         </main>
       </div>
 
-      {/* Stats overlay terminal */}
-      <StatsModal 
-        isOpen={statsOpen} 
-        onClose={() => setStatsOpen(false)} 
-        articles={articles}
+      {/* Live Multiplayer Desktop Cursors Overlay (visible on desktop & non-desktop) */}
+      <LiveCursorsOverlay
+        activeSlug={activeSlug}
+        isTelemetryUnlocked={isTelemetryUnlocked}
+        onNavigateSlug={handleNavigateSlug}
       />
+
+      {/* Stats overlay terminal */}
+      {statsOpen && (
+        <React.Suspense fallback={null}>
+          <StatsModal 
+            isOpen={statsOpen} 
+            onClose={() => {
+              setStatsOpen(false);
+              setIsTerminalAuthorized(false);
+            }} 
+            articles={articles}
+            activeSlug={activeSlug}
+            onAuthStateSync={setIsTerminalAuthorized}
+            onSessionUnlockedChange={setIsTelemetryUnlocked}
+            onJumpToSlug={handleNavigateSlug}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 }
 
 export default function App() {
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    const init = () => {
+      import('./utils/radiansSync').then(({ initRadiansSync }) => {
+        cleanup = initRadiansSync();
+      });
+    };
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(init);
+    } else {
+      setTimeout(init, 1500);
+    }
+    return () => {
+      cleanup?.();
+    };
+  }, []);
+
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/wiki/:slug" element={<WikiContainer />} />
-        <Route path="*" element={<Navigate to="/wiki/home" replace />} />
-      </Routes>
-    </HashRouter>
+    <ThemeProvider>
+      <StarlightBackground />
+      <HashRouter>
+        <Routes>
+          <Route path="/wiki/:slug" element={<WikiContainer />} />
+          <Route path="*" element={<Navigate to="/wiki/home" replace />} />
+        </Routes>
+      </HashRouter>
+    </ThemeProvider>
   );
 }
