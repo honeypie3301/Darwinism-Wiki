@@ -188,8 +188,10 @@ export function isDesktopPointerCapable(): boolean {
   return cachedIsDesktop;
 }
 
-function sanitizeSlug(slug: string): string {
-  return (slug || 'home').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 64) || 'home';
+const WIKI_ROOM_PREFIX = 'darwinism';
+
+function getRoomDocId(slug: string): string {
+  return `cursors_room_${WIKI_ROOM_PREFIX}_${sanitizeSlug(slug)}`;
 }
 
 // Singleton live state
@@ -890,7 +892,7 @@ function subscribeFirestoreRoom(slug: string) {
       unsubscribeRoomSnap = null;
     }
     try {
-      const roomDocId = `cursors_room_${sanitizeSlug(expectedSlug)}`;
+      const roomDocId = getRoomDocId(expectedSlug);
       const roomRef = fb.doc(fb.db, 'stats', roomDocId);
       unsubscribeRoomSnap = fb.onSnapshot(
         roomRef,
@@ -982,7 +984,7 @@ function buildLocalPayload(
 function sendFirestoreCursorPayload(payload: RemoteCursorData, targetSlug = payload.slug) {
   if (!fbCache || !fbCache.hasConfig || !fbCache.db) return;
   try {
-    const roomDocId = `cursors_room_${sanitizeSlug(targetSlug)}`;
+    const roomDocId = getRoomDocId(targetSlug);
     const roomRef = fbCache.doc(fbCache.db, 'stats', roomDocId);
     void fbCache.setDoc(
       roomRef,
@@ -1000,7 +1002,7 @@ function sendFirestoreCursorPayload(payload: RemoteCursorData, targetSlug = payl
 function flushLeaveBeacon(targetSlug: string) {
   if (!fbCache || !fbCache.hasConfig || !targetSlug) return;
   try {
-    const roomDocId = `cursors_room_${sanitizeSlug(targetSlug)}`;
+    const roomDocId = getRoomDocId(targetSlug);
     const details = fbCache.firebaseConfigDetails;
     const projectId = details.projectId || 'backwoods-wiki';
     const databaseId = details.databaseId || '(default)';
@@ -1086,7 +1088,7 @@ export function initCursorSync(initialSlug = 'home'): () => void {
       ws.send(JSON.stringify({ type: 'cursor:update', cursor: payload }));
     }
     if (fbCache && fbCache.hasConfig && fbCache.db) {
-      const roomDocId = `cursors_room_${sanitizeSlug(activeSlug)}`;
+      const roomDocId = getRoomDocId(activeSlug);
       const roomRef = fbCache.doc(fbCache.db, 'stats', roomDocId);
       void fbCache.updateDoc(roomRef, {
         [`cursors.${LOCAL_SESSION_ID}.ts`]: now,
@@ -1722,8 +1724,9 @@ function startTelemetryPresenceStream() {
             const now = Date.now();
             const nextMap = new Map<string, RemoteCursorData>();
             querySnap.forEach((docSnap) => {
-              if (!docSnap.id.startsWith('cursors_room_')) return;
-              const slug = docSnap.id.slice('cursors_room_'.length) || 'home';
+              const prefix = `cursors_room_${WIKI_ROOM_PREFIX}_`;
+              if (!docSnap.id.startsWith(prefix)) return;
+              const slug = docSnap.id.slice(prefix.length) || 'home';
               const data = docSnap.data() as { cursors?: Record<string, RemoteCursorData> };
               const cursorsMap = data?.cursors;
               if (!cursorsMap || typeof cursorsMap !== 'object') return;
