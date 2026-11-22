@@ -80,8 +80,9 @@ const ThemeContext = createContext<ThemeContextType>({
   setTheme: () => {},
 });
 
-const THEME_STORAGE_KEY = 'backwoods_wiki_theme';
-const BASE_THEME_STORAGE_KEY = 'backwoods_wiki_base_theme';
+const THEME_STORAGE_KEY = 'darwinism_wiki_theme';
+const BASE_THEME_STORAGE_KEY = 'darwinism_wiki_base_theme';
+const THEME_COOKIE_PATH = import.meta.env.BASE_URL || '/';
 
 let memoryThemeCache: WikiTheme | null = null;
 let memoryBaseThemeCache: BaseWikiTheme | null = null;
@@ -105,7 +106,7 @@ function isBaseTheme(value: string | null | undefined): value is BaseWikiTheme {
   );
 }
 
-function readWindowNameTheme(field: '__bwTheme' | '__bwBaseTheme'): string | null {
+function readWindowNameTheme(field: '__dwTheme' | '__dwBaseTheme'): string | null {
   try {
     if (typeof window === 'undefined' || !window.name) return null;
     if (window.name.trim().startsWith('{')) {
@@ -132,16 +133,16 @@ function writeWindowNameTheme(themeValue?: WikiTheme, baseValue?: BaseWikiTheme)
           obj = {};
         }
       }
-      if (themeValue) obj.__bwTheme = themeValue;
-      if (baseValue) obj.__bwBaseTheme = baseValue;
+      if (themeValue) obj.__dwTheme = themeValue;
+      if (baseValue) obj.__dwBaseTheme = baseValue;
       window.name = JSON.stringify(obj);
       return;
     }
     let next = current
-      .replace(/\|?__bwTheme=[a-z-]+/g, '')
-      .replace(/\|?__bwBaseTheme=[a-z-]+/g, '');
-    if (themeValue) next += `${next ? '|' : ''}__bwTheme=${themeValue}`;
-    if (baseValue) next += `${next ? '|' : ''}__bwBaseTheme=${baseValue}`;
+      .replace(/\|?__dwTheme=[a-z-]+/g, '')
+      .replace(/\|?__dwBaseTheme=[a-z-]+/g, '');
+    if (themeValue) next += `${next ? '|' : ''}__dwTheme=${themeValue}`;
+    if (baseValue) next += `${next ? '|' : ''}__dwBaseTheme=${baseValue}`;
     window.name = next;
   } catch {
     // Ignore restricted window.name errors
@@ -168,7 +169,7 @@ function readPersistedTheme(): WikiTheme {
     if (isValidTheme(fromLocal)) return fromLocal;
     const fromSession = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(THEME_STORAGE_KEY) : null;
     if (isValidTheme(fromSession)) return fromSession;
-    const fromWin = readWindowNameTheme('__bwTheme');
+    const fromWin = readWindowNameTheme('__dwTheme');
     if (isValidTheme(fromWin)) return fromWin;
     const fromCookie = readCookieValue(THEME_STORAGE_KEY);
     if (isValidTheme(fromCookie)) return fromCookie;
@@ -188,7 +189,7 @@ function readPersistedBaseTheme(): BaseWikiTheme {
     if (isBaseTheme(fromLocalBase)) return fromLocalBase;
     const fromSessionBase = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(BASE_THEME_STORAGE_KEY) : null;
     if (isBaseTheme(fromSessionBase)) return fromSessionBase;
-    const fromWinBase = readWindowNameTheme('__bwBaseTheme');
+    const fromWinBase = readWindowNameTheme('__dwBaseTheme');
     if (isBaseTheme(fromWinBase)) return fromWinBase;
     const fromCookieBase = readCookieValue(BASE_THEME_STORAGE_KEY);
     if (isBaseTheme(fromCookieBase)) return fromCookieBase;
@@ -214,9 +215,9 @@ function persistThemeChoice(newTheme: WikiTheme, newBaseTheme?: BaseWikiTheme) {
   } catch {}
   writeWindowNameTheme(newTheme, newBaseTheme);
   try {
-    document.cookie = `${THEME_STORAGE_KEY}=${newTheme}; path=/; max-age=31536000; SameSite=Lax`;
+    document.cookie = `${THEME_STORAGE_KEY}=${newTheme}; path=${THEME_COOKIE_PATH}; max-age=31536000; SameSite=Lax`;
     if (newBaseTheme) {
-      document.cookie = `${BASE_THEME_STORAGE_KEY}=${newBaseTheme}; path=/; max-age=31536000; SameSite=Lax`;
+      document.cookie = `${BASE_THEME_STORAGE_KEY}=${newBaseTheme}; path=${THEME_COOKIE_PATH}; max-age=31536000; SameSite=Lax`;
     }
   } catch {}
 }

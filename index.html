@@ -19,7 +19,7 @@
     <script>
       (function () {
         try {
-          var key = 'backwoods_wiki_theme';
+          var key = 'darwinism_wiki_theme';
           var valid = { emerald: '#080a08', 'archival-dusk': '#13100e', 'warm-archival': '#f9f6f0', 'crimson-adrenaline': '#0d080a', starlight: '#000000' };
           var found = null;
           try { found = localStorage.getItem(key); } catch (e) {}
@@ -29,14 +29,14 @@
           if ((!found || !valid[found]) && window.name) {
             try {
               var parsed = JSON.parse(window.name);
-              if (parsed && parsed.__bwTheme && valid[parsed.__bwTheme]) found = parsed.__bwTheme;
+              if (parsed && parsed.__dwTheme && valid[parsed.__dwTheme]) found = parsed.__dwTheme;
             } catch (e) {
-              var m = window.name.match(/__bwTheme=([a-z-]+)/);
+              var m = window.name.match(/__dwTheme=([a-z-]+)/);
               if (m && valid[m[1]]) found = m[1];
             }
           }
           if ((!found || !valid[found]) && document.cookie) {
-            var cm = document.cookie.match(/(?:^|;\s*)backwoods_wiki_theme=([a-z-]+)/);
+            var cm = document.cookie.match(/(?:^|;\s*)darwinism_wiki_theme=([a-z-]+)/);
             if (cm && valid[cm[1]]) found = cm[1];
           }
           var active = found && valid[found] ? found : 'crimson-adrenaline';
