@@ -36,9 +36,8 @@
 }
 
 /* ==========================================================================
-   THEME 1 (DEFAULT): EMERALD FOREST
+   THEME 1: EMERALD FOREST
    ========================================================================== */
-:root,
 [data-theme="emerald"] {
   color-scheme: dark;
   --ui-font-display: "Fraunces", ui-serif, Georgia, serif;
@@ -161,8 +160,9 @@
 }
 
 /* ==========================================================================
-   THEME 5: CRIMSON ADRENALINE (OBSIDIAN BURGUNDY & ARTERIAL ROSE)
+   THEME 5 (DEFAULT): CRIMSON ADRENALINE (OBSIDIAN BURGUNDY & ARTERIAL ROSE)
    ========================================================================== */
+:root,
 [data-theme="crimson-adrenaline"] {
   color-scheme: dark;
   --ui-font-display: "Fraunces", ui-serif, Georgia, serif;
@@ -350,7 +350,6 @@
 }
 
 [data-theme="starlight"] [class*="bg-[#709978]"],
-[data-theme="starlight"] [class*="bg-[#527058]"],
 [data-theme="starlight"] .bg-emerald-400,
 [data-theme="starlight"] .bg-emerald-500,
 [data-theme="starlight"] .bg-green-400 {
@@ -453,7 +452,6 @@
 
 [data-theme="starlight"] svg[class*="text-[#a9d1b0]"],
 [data-theme="starlight"] svg[class*="text-[#709978]"],
-[data-theme="starlight"] svg[class*="text-[#5ea386]"],
 [data-theme="starlight"] svg[class*="text-emerald"] {
   color: #e4e4e7 !important;
 }
@@ -547,7 +545,6 @@
 }
 
 [data-theme="archival-dusk"] [class*="bg-[#709978]"],
-[data-theme="archival-dusk"] [class*="bg-[#527058]"],
 [data-theme="archival-dusk"] .bg-emerald-400,
 [data-theme="archival-dusk"] .bg-emerald-500,
 [data-theme="archival-dusk"] .bg-green-400 {
@@ -657,7 +654,6 @@
 
 [data-theme="archival-dusk"] svg[class*="text-[#a9d1b0]"],
 [data-theme="archival-dusk"] svg[class*="text-[#709978]"],
-[data-theme="archival-dusk"] svg[class*="text-[#5ea386]"],
 [data-theme="archival-dusk"] svg[class*="text-emerald"] {
   color: var(--ui-accent-text) !important;
 }
@@ -736,7 +732,6 @@
 }
 
 [data-theme="crimson-adrenaline"] [class*="bg-[#709978]"],
-[data-theme="crimson-adrenaline"] [class*="bg-[#527058]"],
 [data-theme="crimson-adrenaline"] .bg-emerald-400,
 [data-theme="crimson-adrenaline"] .bg-emerald-500,
 [data-theme="crimson-adrenaline"] .bg-green-400 {
@@ -846,7 +841,6 @@
 
 [data-theme="crimson-adrenaline"] svg[class*="text-[#a9d1b0]"],
 [data-theme="crimson-adrenaline"] svg[class*="text-[#709978]"],
-[data-theme="crimson-adrenaline"] svg[class*="text-[#5ea386]"],
 [data-theme="crimson-adrenaline"] svg[class*="text-emerald"] {
   color: var(--ui-accent-text) !important;
 }
@@ -928,7 +922,6 @@
 }
 
 [data-theme="warm-archival"] [class*="bg-[#709978]"],
-[data-theme="warm-archival"] [class*="bg-[#527058]"],
 [data-theme="warm-archival"] .bg-emerald-400,
 [data-theme="warm-archival"] .bg-emerald-500,
 [data-theme="warm-archival"] .bg-green-400 {
@@ -991,10 +984,7 @@
 /* Primary light-mode ink mapping */
 [data-theme="warm-archival"] [class*="text-[#c8d8cb]"],
 [data-theme="warm-archival"] [class*="text-[#c9d1c9]"],
-[data-theme="warm-archival"] [class*="text-[#c6d1c8]"],
-[data-theme="warm-archival"] [class*="text-[#d0e0d6]"],
 [data-theme="warm-archival"] [class*="text-[#e0e7e0]"],
-[data-theme="warm-archival"] [class*="text-[#d1dad1]"],
 [data-theme="warm-archival"] [class*="text-[#d6ded7]"],
 [data-theme="warm-archival"] [class*="text-[#d9eadc]"],
 [data-theme="warm-archival"] [class*="text-[#e1eae2]"],
@@ -1059,7 +1049,6 @@
 
 [data-theme="warm-archival"] svg[class*="text-[#a9d1b0]"],
 [data-theme="warm-archival"] svg[class*="text-[#709978]"],
-[data-theme="warm-archival"] svg[class*="text-[#5ea386]"],
 [data-theme="warm-archival"] svg[class*="text-emerald"] {
   color: var(--ui-accent-text) !important;
 }
@@ -1440,98 +1429,21 @@
   pointer-events: none;
 }
 
-[data-theme="starlight"] .threat-badge-extermination {
-  background-color: #251012 !important;
-  border-color: rgba(239, 68, 68, 0.75) !important;
-  color: #f87171 !important;
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.75) !important;
-}
-
-[data-theme="starlight"] .threat-badge-extreme {
-  background-color: #221315 !important;
-  border-color: rgba(127, 29, 29, 0.5) !important;
-  color: #cf8f92 !important;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.45) !important;
-}
-
-[data-theme="starlight"] .threat-badge-high {
-  background-color: #1a1318 !important;
-  border-color: rgba(63, 33, 35, 0.4) !important;
-  color: #b5a3bd !important;
-  box-shadow: 0 0 4px rgba(239, 68, 68, 0.25) !important;
-}
-
-[data-theme="starlight"] .threat-badge-medium {
-  background-color: #1a1715 !important;
-  border-color: rgba(47, 40, 36, 0.4) !important;
-  color: #c2b09f !important;
-  box-shadow: none !important;
-}
-
-[data-theme="starlight"] .threat-badge-low {
-  background-color: #141715 !important;
-  border-color: rgba(34, 41, 36, 0.4) !important;
-  color: #9bb0a0 !important;
-  box-shadow: none !important;
-}
-
-[data-theme="starlight"] .threat-badge-passive {
-  background-color: #111412 !important;
-  border-color: rgba(27, 34, 29, 0.4) !important;
-  color: #829285 !important;
-  box-shadow: none !important;
-}
-
-/* Warm Archival Threat Badge Light-Paper Contrast */
-[data-theme="warm-archival"] .threat-badge-extermination {
-  background-color: #fef2f2 !important;
-  border-color: #f87171 !important;
-  color: #991b1b !important;
-  box-shadow: 0 0 8px rgba(185, 28, 28, 0.18) !important;
-}
-
-[data-theme="warm-archival"] .threat-badge-extreme {
-  background-color: #fff1f2 !important;
-  border-color: #fda4af !important;
-  color: #be123c !important;
-  box-shadow: none !important;
-}
-
-[data-theme="warm-archival"] .threat-badge-high {
-  background-color: #fff7ed !important;
-  border-color: #fdba74 !important;
-  color: #c2410c !important;
-  box-shadow: none !important;
-}
-
-[data-theme="warm-archival"] .threat-badge-medium {
-  background-color: #fef3c7 !important;
-  border-color: #fcd34d !important;
-  color: #92400e !important;
-  box-shadow: none !important;
-}
-
-[data-theme="warm-archival"] .threat-badge-low {
-  background-color: #f0fdf4 !important;
-  border-color: #bbf7d0 !important;
-  color: #15803d !important;
-  box-shadow: none !important;
-}
-
-[data-theme="warm-archival"] .threat-badge-passive {
-  background-color: #f2ece1 !important;
-  border-color: #e2d9c8 !important;
-  color: #57534e !important;
-  box-shadow: none !important;
-}
-
 /* ==========================================================================
    SELECTION TINTS PER THEME
    ========================================================================== */
 ::selection,
-*::selection {
-  background-color: rgba(66, 89, 70, 0.55);
+*::selection,
+[data-theme="crimson-adrenaline"] ::selection,
+[data-theme="crimson-adrenaline"] *::selection {
+  background-color: rgba(225, 29, 72, 0.34);
   color: #ffffff;
+}
+
+[data-theme="emerald"] ::selection,
+[data-theme="emerald"] *::selection {
+  background-color: rgba(66, 89, 70, 0.55) !important;
+  color: #ffffff !important;
 }
 
 [data-theme="archival-dusk"] ::selection,
@@ -1552,10 +1464,14 @@
   color: #ffffff !important;
 }
 
-[data-theme="crimson-adrenaline"] ::selection,
-[data-theme="crimson-adrenaline"] *::selection {
-  background-color: rgba(225, 29, 72, 0.34) !important;
-  color: #ffffff !important;
+@keyframes bwFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bwModalIn {
+  from { opacity: 0; transform: translate3d(0, 6px, 0) scale(0.98); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
 /* Override native OS cursor immediately via hardware-composited CSS custom cursors */

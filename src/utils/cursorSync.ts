@@ -190,6 +190,10 @@ export function isDesktopPointerCapable(): boolean {
 
 const WIKI_ROOM_PREFIX = 'darwinism';
 
+function sanitizeSlug(slug: string): string {
+  return (slug || 'home').toLowerCase().replace(/[^a-z0-9_-]+/g, '_');
+}
+
 function getRoomDocId(slug: string): string {
   return `cursors_room_${WIKI_ROOM_PREFIX}_${sanitizeSlug(slug)}`;
 }

@@ -9,7 +9,13 @@ import {
   Loader2
 } from 'lucide-react';
 import { WikiArticle } from '../types';
-import { parseWikiSyntax, slugify } from '../utils/parser';
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
 
 import HomeView from './special/HomeView';
 const MechanicsView = lazy(() => import('./special/MechanicsView'));
@@ -46,80 +52,95 @@ export default function ArticleView({
 
   const isSpecialPage = ['home', 'mechanics', 'versions', 'items', 'acquisition', 'technical'].includes(article.slug);
 
-  // Synchronously memoize headers and parsed HTML to avoid double-render passes
-  const { htmlContent, headings } = useMemo(() => {
-    if (!rawContent) {
-      return { htmlContent: '', headings: [] as HeadingItem[] };
+  const [parsedHtml, setParsedHtml] = useState('');
+
+  // Synchronously memoize headers; skip heavy parser for special React views
+  const headings = useMemo(() => {
+    if (!rawContent || isSpecialPage) {
+      return [] as HeadingItem[];
     }
 
     const foundHeadings: HeadingItem[] = [];
-    if (!isSpecialPage) {
-      const lines = rawContent.split('\n');
-      lines.forEach(line => {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('<!--') || trimmed.endsWith('-->')) {
-          return;
-        }
-
-        const h4WikiMatch = trimmed.match(/^====\s*([^=]*?)\s*====\s*$/);
-        if (h4WikiMatch) {
-          foundHeadings.push({
-            id: slugify(h4WikiMatch[1]),
-            text: h4WikiMatch[1],
-            level: 4
-          });
-          return;
-        }
-
-        const h3WikiMatch = trimmed.match(/^===\s*([^=]*?)\s*===\s*$/);
-        if (h3WikiMatch) {
-          foundHeadings.push({
-            id: slugify(h3WikiMatch[1]),
-            text: h3WikiMatch[1],
-            level: 3
-          });
-          return;
-        }
-
-        const h2WikiMatch = trimmed.match(/^==\s*([^=]*?)\s*==\s*$/);
-        if (h2WikiMatch) {
-          foundHeadings.push({
-            id: slugify(h2WikiMatch[1]),
-            text: h2WikiMatch[1],
-            level: 2
-          });
-          return;
-        }
-
-        const htmlMatch = trimmed.match(/<(h2|h3|h4)(?:\s+[^>]*?)?>(.*?)<\/\1>/i);
-        if (htmlMatch) {
-          const tag = htmlMatch[1].toLowerCase();
-          const rawText = htmlMatch[2];
-          const text = rawText.replace(/<[^>]*>/g, '').trim();
-          const level = parseInt(tag[1], 10);
-          foundHeadings.push({
-            id: slugify(text),
-            text: text,
-            level: level
-          });
-        }
-      });
-    }
-
-    let parsed = parseWikiSyntax(rawContent);
-
-    if (searchQuery && searchQuery.trim().length > 1) {
-      const escapedQuery = searchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      try {
-        const queryRegex = new RegExp(`(?<!<[^>]*)\\b(${escapedQuery})\\b`, 'gi');
-        parsed = parsed.replace(queryRegex, match => `<mark class="bg-accent-soft text-accent-text px-0.5 rounded border border-accent-border">${match}</mark>`);
-      } catch {
-        // Fallback if lookbehind is not supported or regex fails
+    const lines = rawContent.split('\n');
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('<!--') || trimmed.endsWith('-->')) {
+        return;
       }
-    }
 
-    return { htmlContent: parsed, headings: foundHeadings };
+      const h4WikiMatch = trimmed.match(/^====\s*([^=]*?)\s*====\s*$/);
+      if (h4WikiMatch) {
+        foundHeadings.push({
+          id: slugify(h4WikiMatch[1]),
+          text: h4WikiMatch[1],
+          level: 4
+        });
+        return;
+      }
+
+      const h3WikiMatch = trimmed.match(/^===\s*([^=]*?)\s*===\s*$/);
+      if (h3WikiMatch) {
+        foundHeadings.push({
+          id: slugify(h3WikiMatch[1]),
+          text: h3WikiMatch[1],
+          level: 3
+        });
+        return;
+      }
+
+      const h2WikiMatch = trimmed.match(/^==\s*([^=]*?)\s*==\s*$/);
+      if (h2WikiMatch) {
+        foundHeadings.push({
+          id: slugify(h2WikiMatch[1]),
+          text: h2WikiMatch[1],
+          level: 2
+        });
+        return;
+      }
+
+      const htmlMatch = trimmed.match(/<(h2|h3|h4)(?:\s+[^>]*?)?>(.*?)<\/\1>/i);
+      if (htmlMatch) {
+        const tag = htmlMatch[1].toLowerCase();
+        const rawText = htmlMatch[2];
+        const text = rawText.replace(/<[^>]*>/g, '').trim();
+        const level = parseInt(tag[1], 10);
+        foundHeadings.push({
+          id: slugify(text),
+          text: text,
+          level: level
+        });
+      }
+    });
+
+    return foundHeadings;
+  }, [rawContent, isSpecialPage]);
+
+  useEffect(() => {
+    if (isSpecialPage || !rawContent) {
+      setParsedHtml('');
+      return;
+    }
+    let cancelled = false;
+    void import('../utils/parser').then(({ parseWikiSyntax }) => {
+      if (cancelled) return;
+      let parsed = parseWikiSyntax(rawContent);
+      if (searchQuery && searchQuery.trim().length > 1) {
+        const escapedQuery = searchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        try {
+          const queryRegex = new RegExp(`(?<!<[^>]*)\\b(${escapedQuery})\\b`, 'gi');
+          parsed = parsed.replace(queryRegex, match => `<mark class="bg-accent-soft text-accent-text px-0.5 rounded border border-accent-border">${match}</mark>`);
+        } catch {
+          // Fallback if lookbehind is not supported or regex fails
+        }
+      }
+      setParsedHtml(parsed);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [rawContent, searchQuery, isSpecialPage]);
+
+  const htmlContent = parsedHtml;
 
   // Find next and previous articles in sorted manifest
   const { prevArticle, nextArticle } = useMemo(() => {

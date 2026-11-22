@@ -9,7 +9,6 @@
  * ========================================================================================
  */
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, 
   RefreshCw, 
@@ -1119,34 +1118,25 @@ export default function StatsModal({
     : 0;
 
   return (
-    <AnimatePresence>
-      <div className={`fixed inset-0 z-50 flex items-center justify-center ${
-        isFullscreen ? 'p-1 sm:p-2' : 'p-2 sm:p-5'
-      }`}>
-        {/* Clean, high-performance backdrop overlay */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.12 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/85 cursor-pointer"
-          id="stats-modal-backdrop"
-        />
+    <div className={`fixed inset-0 z-50 flex items-center justify-center ${
+      isFullscreen ? 'p-1 sm:p-2' : 'p-2 sm:p-5'
+    }`}>
+      {/* Clean, high-performance backdrop overlay */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 bg-black/85 cursor-pointer animate-[bwFadeIn_120ms_ease-out]"
+        id="stats-modal-backdrop"
+      />
 
-        {/* Modal Window: Sleek Minimalist Dark HUD with Crisp Borders */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.98, y: 6 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.98, y: 6 }}
-          transition={{ duration: 0.12, ease: 'easeOut' }}
-          className={`relative w-full bg-[#080c09] border border-[#1b261e] rounded-lg shadow-2xl overflow-hidden flex flex-col font-mono z-50 text-[#c8d4ca] will-change-transform ${
-            isFullscreen 
-              ? 'w-[98.5vw] h-[97vh] max-w-[98.5vw] max-h-[97vh]' 
-              : 'w-full max-w-6xl h-[92vh] sm:h-[88vh] max-h-[92vh] sm:max-h-[88vh]'
-          }`}
-          id="stats-modal-container"
-        >
+      {/* Modal Window: Sleek Minimalist Dark HUD with Crisp Borders */}
+      <div
+        className={`relative w-full bg-[#080c09] border border-[#1b261e] rounded-lg shadow-2xl overflow-hidden flex flex-col font-mono z-50 text-[#c8d4ca] will-change-transform animate-[bwModalIn_120ms_ease-out] ${
+          isFullscreen
+            ? 'w-[98.5vw] h-[97vh] max-w-[98.5vw] max-h-[97vh]'
+            : 'w-full max-w-6xl h-[92vh] sm:h-[88vh] max-h-[92vh] sm:max-h-[88vh]'
+        }`}
+        id="stats-modal-container"
+      >
           {/* Header - Minimalist Tactical HUD Bar */}
           <div 
             className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 bg-[#0b100d] border-b border-[#1b261e] select-none gap-2 cursor-default"
@@ -2001,8 +1991,7 @@ export default function StatsModal({
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
-    </AnimatePresence>
   );
 }

@@ -9,9 +9,6 @@ import { detectClientEnvironment } from './utils/deviceInfo';
 import { trackTelemetryClick, trackHoneyProbe } from './utils/telemetry';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
-import StarlightBackground from './components/special/StarlightBackground';
-import LiveCursorsOverlay from './components/special/LiveCursorsOverlay';
-import { usePageOccupancy } from './utils/cursorSync';
 import {
   hasPersistedTelemetryUnlockHint,
   getPersistedAdminToken,
@@ -22,6 +19,9 @@ import {
   clearPersistedAdminToken,
 } from './utils/telemetryAuth';
 
+const StarlightBackground = React.lazy(() => import('./components/special/StarlightBackground'));
+const LiveCursorsOverlay = React.lazy(() => import('./components/special/LiveCursorsOverlay'));
+const OccupancyBridge = React.lazy(() => import('./components/special/OccupancyBridge'));
 const StatsModal = React.lazy(() => import('./components/StatsModal'));
 
 function WikiContainer() {
@@ -43,7 +43,7 @@ function WikiContainer() {
     hasPersistedTelemetryUnlockHint()
   );
   const isTerminalAuthorizedRef = React.useRef(false);
-  const pageOccupancy = usePageOccupancy(isTelemetryUnlocked);
+  const [pageOccupancy, setPageOccupancy] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -91,24 +91,31 @@ function WikiContainer() {
       void runTokenCheck(tok);
     });
 
-    void (async () => {
-      try {
-        const [{ onAuthStateChanged }, { auth }] = await Promise.all([
-          import('firebase/auth'),
-          import('./lib/firebase'),
-        ]);
-        if (cancelled) return;
-        unsubscribeFirebase = onAuthStateChanged(auth, (user) => {
+    const shouldCheckFirebaseAuth = hasPersistedTelemetryUnlockHint();
+    if (!shouldCheckFirebaseAuth) {
+      firebaseReady = true;
+      firebaseAuthed = false;
+      recomputeUnlock();
+    } else {
+      void (async () => {
+        try {
+          const [{ onAuthStateChanged }, { auth }] = await Promise.all([
+            import('firebase/auth'),
+            import('./lib/firebase'),
+          ]);
+          if (cancelled) return;
+          unsubscribeFirebase = onAuthStateChanged(auth, (user) => {
+            firebaseReady = true;
+            firebaseAuthed = isAuthorizedFirebaseUser(user);
+            recomputeUnlock();
+          });
+        } catch {
           firebaseReady = true;
-          firebaseAuthed = isAuthorizedFirebaseUser(user);
+          firebaseAuthed = false;
           recomputeUnlock();
-        });
-      } catch {
-        firebaseReady = true;
-        firebaseAuthed = false;
-        recomputeUnlock();
-      }
-    })();
+        }
+      })();
+    }
 
     return () => {
       cancelled = true;
@@ -299,7 +306,25 @@ function WikiContainer() {
     };
 
     if (!loading && !error) {
-      recordVisit();
+      let idleId: number | null = null;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleId = (window as any).requestIdleCallback(() => {
+          void recordVisit();
+        }, { timeout: 1500 });
+      } else {
+        timeoutId = setTimeout(() => {
+          void recordVisit();
+        }, 800);
+      }
+      return () => {
+        if (idleId !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+          (window as any).cancelIdleCallback(idleId);
+        }
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId);
+        }
+      };
     }
   }, [activeSlug, loading, error]);
 
@@ -732,12 +757,21 @@ function WikiContainer() {
         </main>
       </div>
 
-      {/* Live Multiplayer Desktop Cursors Overlay (visible on desktop & non-desktop) */}
-      <LiveCursorsOverlay
-        activeSlug={activeSlug}
-        isTelemetryUnlocked={isTelemetryUnlocked}
-        onNavigateSlug={handleNavigateSlug}
-      />
+      {/* Admin sidebar page occupancy bridge (lazy-loaded only when unlocked) */}
+      {isTelemetryUnlocked && (
+        <React.Suspense fallback={null}>
+          <OccupancyBridge onChange={setPageOccupancy} />
+        </React.Suspense>
+      )}
+
+      {/* Live Multiplayer Desktop Cursors Overlay (lazy-loaded so article renders first) */}
+      <React.Suspense fallback={null}>
+        <LiveCursorsOverlay
+          activeSlug={activeSlug}
+          isTelemetryUnlocked={isTelemetryUnlocked}
+          onNavigateSlug={handleNavigateSlug}
+        />
+      </React.Suspense>
 
       {/* Stats overlay terminal */}
       {statsOpen && (
@@ -757,6 +791,16 @@ function WikiContainer() {
         </React.Suspense>
       )}
     </div>
+  );
+}
+
+function ThemedStarlightBackground() {
+  const { theme } = useTheme();
+  if (theme !== 'starlight') return null;
+  return (
+    <React.Suspense fallback={null}>
+      <StarlightBackground />
+    </React.Suspense>
   );
 }
 
@@ -780,7 +824,7 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <StarlightBackground />
+      <ThemedStarlightBackground />
       <HashRouter>
         <Routes>
           <Route path="/wiki/:slug" element={<WikiContainer />} />

@@ -327,8 +327,19 @@ async function startServer() {
   } else {
     const cwdDist = path.join(process.cwd(), 'dist');
     const distPath = fs.existsSync(path.join(cwdDist, 'index.html')) ? cwdDist : __dirname;
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, {
+      etag: true,
+      maxAge: '1y',
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
+          res.setHeader('Cache-Control', 'no-cache');
+        } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      },
+    }));
     app.get('*', (_req, res) => {
+      res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
